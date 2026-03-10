@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Drone Desktop</title>
+    <style>
+        * { margin: 0; padding: 0; }
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: transparent;
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Sprite config
+        const DIR_COUNT = 8;
+        const ANIM_FRAMES = 12;
+        const FRAME_W = 96;
+        const FRAME_H = 96;
+        const COLLISION_RADIUS = 30;
+        const MAX_HITS = 3;
+
+        const spriteFrames = {};
+        const frameCanvases = [];
+
+        // Embedded sprite data
+        const SPRITE_DATA = {"frames":[["drone5_0-11",1,1,62,47,-18,-21,96,96],["drone5_1-05",65,1,62,47,-18,-21,96,96],["drone5_1-08",129,1,63,47,-17,-21,96,96],["drone5_0-03",194,1,59,48,-19,-21,96,96],["drone5_2-02",1,50,62,47,-18,-21,96,96],["drone5_2-05",65,50,63,47,-17,-21,96,96],["drone5_2-11",130,50,62,47,-18,-21,96,96],["drone5_1-00",194,51,59,48,-19,-21,96,96],["drone5_3-05",1,99,62,47,-18,-21,96,96],["drone5_3-08",65,99,63,47,-17,-21,96,96],["drone5_4-02",130,99,62,47,-18,-21,96,96],["drone5_3-00",194,101,59,48,-19,-21,96,96],["drone5_4-05",1,148,63,47,-17,-21,96,96],["drone5_4-11",66,148,62,47,-18,-21,96,96],["drone5_6-05",130,148,62,47,-17,-21,96,96],["drone5_6-04",194,151,59,48,-19,-21,96,96],["drone5_5-08",1,197,63,47,-17,-21,96,96],["drone5_0-02",66,197,62,48,-18,-21,96,96],["drone5_0-08",130,197,62,48,-18,-21,96,96],["drone5_0-00",194,201,58,49,-20,-21,96,96],["drone5_0-05",1,246,63,48,-17,-21,96,96],["drone5_1-02",66,247,62,48,-18,-21,96,96],["drone5_1-07",130,247,61,48,-18,-21,96,96],["drone5_2-03",193,252,60,48,-19,-21,96,96],["drone5_1-11",1,296,62,48,-18,-21,96,96],["drone5_2-04",65,297,61,48,-18,-21,96,96],["drone5_2-08",128,297,62,48,-18,-21,96,96],["drone5_4-03",192,302,60,48,-19,-21,96,96],["drone5_3-02",1,346,62,48,-18,-21,96,96],["drone5_3-11",65,347,62,48,-18,-21,96,96],["drone5_4-04",129,347,61,48,-18,-21,96,96],["drone5_5-00",192,352,61,48,-18,-21,96,96],["drone5_4-08",1,396,62,48,-18,-21,96,96],["drone5_5-02",65,397,62,48,-18,-21,96,96],["drone5_5-07",129,397,60,48,-19,-21,96,96],["drone5_5-05",191,402,62,48,-18,-21,96,96],["drone5_5-11",1,446,62,48,-18,-21,96,96],["drone5_6-02",65,447,62,48,-18,-21,96,96],["drone5_0-04",129,447,59,49,-19,-21,96,96],["drone5_6-08",190,452,62,48,-18,-21,96,96],["drone5_6-11",1,496,62,48,-18,-21,96,96],["drone5_7-05",65,497,62,48,-18,-21,96,96],["drone5_0-06",129,498,59,49,-19,-21,96,96],["drone5_7-02",190,502,63,48,-17,-21,96,96],["drone5_7-11",1,546,62,48,-18,-21,96,96],["drone5_0-01",65,547,61,49,-19,-21,96,96],["drone5_0-09",128,549,59,49,-20,-21,96,96],["drone5_7-08",189,552,63,48,-17,-21,96,96],["drone5_0-07",1,596,61,49,-18,-21,96,96],["drone5_0-10",64,598,62,49,-18,-21,96,96],["drone5_1-01",128,600,59,49,-19,-21,96,96],["drone5_1-03",189,602,59,49,-19,-21,96,96],["drone5_1-04",1,647,60,49,-19,-21,96,96],["drone5_1-06",63,649,60,49,-19,-21,96,96],["drone5_1-09",125,651,59,49,-19,-21,96,96],["drone5_1-10",186,653,60,49,-19,-21,96,96],["drone5_2-00",1,698,58,49,-20,-21,96,96],["drone5_2-01",61,700,61,49,-19,-21,96,96],["drone5_2-06",124,702,59,49,-19,-21,96,96],["drone5_2-07",185,704,60,49,-19,-21,96,96],["drone5_6-09",1,749,57,49,-21,-21,96,96],["drone5_2-09",60,751,59,49,-20,-21,96,96],["drone5_2-10",121,753,60,49,-19,-21,96,96],["drone5_3-01",183,755,59,49,-19,-21,96,96],["drone5_3-03",1,802,59,49,-19,-21,96,96],["drone5_3-04",62,804,60,49,-19,-21,96,96],["drone5_3-06",124,806,60,49,-19,-21,96,96],["drone5_3-07",186,806,61,49,-18,-21,96,96],["drone5_3-09",1,853,59,49,-19,-21,96,96],["drone5_3-10",62,855,60,49,-19,-21,96,96],["drone5_4-00",124,857,58,49,-20,-21,96,96],["drone5_4-01",184,857,61,49,-19,-21,96,96],["drone5_4-06",1,904,59,49,-19,-21,96,96],["drone5_4-07",62,906,60,49,-19,-21,96,96],["drone5_4-09",124,908,59,49,-20,-21,96,96],["drone5_4-10",185,908,60,49,-19,-21,96,96],["drone5_5-03",1,955,58,49,-20,-21,96,96],["drone5_5-01",61,957,61,49,-18,-21,96,96],["drone5_5-04",124,959,60,49,-19,-21,96,96],["drone5_5-06",186,959,60,49,-19,-21,96,96],["drone5_6-00",1,1006,58,49,-20,-21,96,96],["drone5_5-09",61,1008,61,49,-18,-21,96,96],["drone5_5-10",124,1010,61,49,-18,-21,96,96],["drone5_6-01",187,1010,61,49,-19,-21,96,96],["drone5_7-06",1,1057,58,49,-20,-21,96,96],["drone5_6-03",61,1059,60,49,-19,-21,96,96],["drone5_6-06",123,1061,59,49,-19,-21,96,96],["drone5_6-07",184,1061,62,49,-18,-21,96,96],["drone5_6-10",1,1110,60,49,-19,-21,96,96],["drone5_7-00",63,1112,61,49,-18,-21,96,96],["drone5_7-01",126,1112,59,49,-19,-21,96,96],["drone5_7-03",187,1112,59,49,-19,-21,96,96],["drone5_7-07",1,1161,59,49,-19,-21,96,96],["drone5_7-04",62,1163,62,49,-18,-21,96,96],["drone5_7-09",126,1163,61,49,-18,-21,96,96],["drone5_7-10",189,1163,60,49,-19,-21,96,96]]};
+
+        function loadSpriteData() {
+            for (const frame of SPRITE_DATA.frames) {
+                const [name, x, y, w, h, offsetX, offsetY] = frame;
+                spriteFrames[name] = { x, y, w, h, offsetX, offsetY };
+            }
+        }
+
+        function preSliceSprites(img) {
+            for (let dir = 0; dir < DIR_COUNT; dir++) {
+                frameCanvases[dir] = [];
+                for (let frame = 0; frame < ANIM_FRAMES; frame++) {
+                    const frameName = `drone5_${dir}-${frame.toString().padStart(2, '0')}`;
+                    const fd = spriteFrames[frameName];
+                    if (!fd) continue;
+
+                    const fc = document.createElement('canvas');
+                    fc.width = FRAME_W;
+                    fc.height = FRAME_H;
+                    const fctx = fc.getContext('2d');
+                    fctx.drawImage(img, fd.x, fd.y, fd.w, fd.h, -fd.offsetX, -fd.offsetY, fd.w, fd.h);
+                    frameCanvases[dir][frame] = fc;
+                }
+            }
+        }
+
+        // Game state
+        let drones = [];
+        let targetDroneCount = 3;
+
+        // Drone class
+        class Drone {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * (window.innerWidth - 100);
+                this.y = Math.random() * (window.innerHeight - 100);
+                const speed = 40 + Math.random() * 60;
+                const angle = Math.random() * Math.PI * 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.frame = Math.floor(Math.random() * ANIM_FRAMES);
+                this.hoverOffset = Math.random() * Math.PI * 2;
+                this.frameTime = 0;
+                this.scale = 0.8 + Math.random() * 0.4;
+                this.hits = 0;
+                this.alpha = 1.0;
+                this.dead = false;
+                this.collisionCooldown = 0;
+            }
+
+            get centerX() { return this.x + (FRAME_W * this.scale) / 2; }
+            get centerY() { return this.y + (FRAME_H * this.scale) / 2; }
+
+            checkCollision(other) {
+                if (this.collisionCooldown > 0 || other.collisionCooldown > 0) return false;
+                const dx = this.centerX - other.centerX;
+                const dy = this.centerY - other.centerY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                return dist < COLLISION_RADIUS * (this.scale + other.scale);
+            }
+
+            onCollision() {
+                this.hits++;
+                this.collisionCooldown = 0.5;
+
+                if (this.hits >= MAX_HITS) {
+                    this.dead = true;
+                } else {
+                    this.alpha = 1.0 - (this.hits / MAX_HITS) * 0.6;
+                }
+
+                this.vx *= -1.2;
+                this.vy *= -1.2;
+            }
+
+            update(dt) {
+                if (this.dead) return;
+
+                this.collisionCooldown = Math.max(0, this.collisionCooldown - dt);
+
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed > 100) {
+                    this.vx *= 0.98;
+                    this.vy *= 0.98;
+                }
+
+                if (this.x < 0 || this.x > canvas.width - FRAME_W * this.scale) {
+                    this.vx *= -1;
+                    this.x = Math.max(0, Math.min(this.x, canvas.width - FRAME_W * this.scale));
+                }
+                if (this.y < 0 || this.y > canvas.height - FRAME_H * this.scale) {
+                    this.vy *= -1;
+                    this.y = Math.max(0, Math.min(this.y, canvas.height - FRAME_H * this.scale));
+                }
+
+                this.frameTime += dt;
+                if (this.frameTime >= 0.03) {
+                    this.frame = (this.frame + 1) % ANIM_FRAMES;
+                    this.frameTime = 0;
+                }
+            }
+
+            draw(ctx, time) {
+                if (this.dead) return;
+
+                const hoverY = Math.sin(time / 200 + this.hoverOffset) * 3;
+
+                const angle = Math.atan2(this.vy, this.vx);
+                const normalizedAngle = (angle + Math.PI * 2) % (Math.PI * 2);
+                const sector = Math.floor((normalizedAngle + Math.PI / 8) / (Math.PI / 4)) % 8;
+                const sectorToDir = [6, 7, 0, 1, 2, 3, 4, 5];
+                const dir = sectorToDir[sector];
+
+                const fc = frameCanvases[dir]?.[this.frame];
+                if (!fc) return;
+
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+
+                if (this.collisionCooldown > 0.3) {
+                    ctx.filter = 'hue-rotate(-50deg) saturate(2)';
+                }
+
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetY = 8;
+
+                ctx.drawImage(fc, this.x, this.y + hoverY, FRAME_W * this.scale, FRAME_H * this.scale);
+                ctx.restore();
+            }
+        }
+
+        function checkAllCollisions() {
+            for (let i = 0; i < drones.length; i++) {
+                for (let j = i + 1; j < drones.length; j++) {
+                    if (drones[i].dead || drones[j].dead) continue;
+                    if (drones[i].checkCollision(drones[j])) {
+                        drones[i].onCollision();
+                        drones[j].onCollision();
+                    }
+                }
+            }
+        }
+
+        function cleanupDrones() {
+            drones = drones.filter(d => !d.dead);
+
+            if (drones.length === 0 && targetDroneCount > 0) {
+                for (let i = 0; i < targetDroneCount; i++) {
+                    drones.push(new Drone());
+                }
+                syncCount();
+            }
+        }
+
+        // IPC với main process
+        const { ipcRenderer } = typeof require !== 'undefined' ? require('electron') : { ipcRenderer: null };
+
+        function syncCount() {
+            if (ipcRenderer) {
+                ipcRenderer.send('update-count', drones.length);
+            }
+        }
+
+        function addDrone() {
+            targetDroneCount++;
+            drones.push(new Drone());
+            syncCount();
+        }
+
+        function removeDrone() {
+            if (drones.length > 1) {
+                targetDroneCount = Math.max(1, targetDroneCount - 1);
+                drones.pop();
+                syncCount();
+            }
+        }
+
+        function resetDrones() {
+            drones = [];
+            for (let i = 0; i < targetDroneCount; i++) {
+                drones.push(new Drone());
+            }
+            syncCount();
+        }
+
+        function addDrones(n) {
+            for (let i = 0; i < n; i++) {
+                drones.push(new Drone());
+            }
+            targetDroneCount = drones.length;
+            syncCount();
+        }
+
+        function removeDrones(n) {
+            const toRemove = Math.min(n, drones.length - 1);
+            for (let i = 0; i < toRemove; i++) {
+                drones.pop();
+            }
+            targetDroneCount = Math.max(1, drones.length);
+            syncCount();
+        }
+
+        function setDrones(n) {
+            drones = [];
+            targetDroneCount = n;
+            for (let i = 0; i < n; i++) {
+                drones.push(new Drone());
+            }
+            syncCount();
+        }
+
+        // Nhận lệnh từ tray menu
+        if (ipcRenderer) {
+            ipcRenderer.on('add-drone', addDrone);
+            ipcRenderer.on('remove-drone', removeDrone);
+            ipcRenderer.on('add-drones', (_, n) => addDrones(n));
+            ipcRenderer.on('remove-drones', (_, n) => removeDrones(n));
+            ipcRenderer.on('set-drones', (_, n) => setDrones(n));
+            ipcRenderer.on('reset', resetDrones);
+        }
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        let lastTime = 0;
+        function loop(time) {
+            const dt = lastTime ? (time - lastTime) / 1000 : 0;
+            lastTime = time;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (const d of drones) {
+                d.update(Math.min(dt, 0.1));
+            }
+
+            checkAllCollisions();
+            cleanupDrones();
+
+            for (const d of drones) {
+                d.draw(ctx, time);
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        function init() {
+            resize();
+            window.addEventListener('resize', resize);
+            loadSpriteData();
+
+            const img = new Image();
+            img.src = 'drone5_0-a87912ea5.png';
+            img.onload = () => {
+                preSliceSprites(img);
+                for (let i = 0; i < targetDroneCount; i++) {
+                    drones.push(new Drone());
+                }
+                syncCount();
+                requestAnimationFrame(loop);
+            };
+        }
+
+        init();
+    </script>
+</body>
+</html>

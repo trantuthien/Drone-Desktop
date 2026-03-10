@@ -1,0 +1,30 @@
+{
+  "name": "drone-desktop",
+  "version": "1.0.0",
+  "description": "Desktop drone animation for macOS",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --mac",
+    "build:dir": "electron-builder --mac --dir"
+  },
+  "build": {
+    "appId": "com.drone.desktop",
+    "productName": "Drone Desktop",
+    "mac": {
+      "category": "public.app-category.entertainment",
+      "icon": "icon.icns",
+      "target": "dir"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "drone5_0-a87912ea5.png",
+      "tray-iconTemplate.png"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}
