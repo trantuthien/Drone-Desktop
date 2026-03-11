@@ -1,9 +1,24 @@
 const { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
 
+// Disable vsync và enable smooth scrolling
+app.commandLine.appendSwitch('disable-gpu-vsync');
+app.commandLine.appendSwitch('disable-frame-rate-limit');
+
 let mainWindow;
 let tray;
 let droneCount = 3;
+
+// ========== DEFAULT SETTINGS (thay đổi giá trị ở đây) ==========
+const settings = {
+    moveSpeed: { min: 20, max: 50 },     // Tốc độ di chuyển (px/s)
+    spriteSpeed: 0.06,                   // Tốc độ xoay sprite (giây/frame, nhỏ = nhanh)
+    hoverAmplitude: 0,                   // Biên độ hover (px, 0 = tắt)
+    hoverPeriod: 500,                    // Chu kỳ hover (ms)
+    collisionEnabled: true,              // Bật/tắt va chạm
+    dragEnabled: false,                  // Bật/tắt kéo thả chuột
+};
+// ================================================================
 
 function createTray() {
     // Dùng file PNG với suffix "Template" cho macOS
@@ -53,6 +68,38 @@ function setDrones(n) {
     updateTrayMenu();
 }
 
+function setMoveSpeed(min, max) {
+    settings.moveSpeed = { min, max };
+    mainWindow?.webContents.send('set-move-speed', { min, max });
+    updateTrayMenu();
+}
+
+function setSpriteSpeed(speed) {
+    settings.spriteSpeed = speed;
+    mainWindow?.webContents.send('set-sprite-speed', speed);
+    updateTrayMenu();
+}
+
+function setHover(amplitude, period) {
+    settings.hoverAmplitude = amplitude;
+    settings.hoverPeriod = period;
+    mainWindow?.webContents.send('set-hover', { amplitude, period });
+    updateTrayMenu();
+}
+
+function setCollision(enabled) {
+    settings.collisionEnabled = enabled;
+    mainWindow?.webContents.send('set-collision', enabled);
+    updateTrayMenu();
+}
+
+function setDrag(enabled) {
+    settings.dragEnabled = enabled;
+    mainWindow?.setIgnoreMouseEvents(!enabled, { forward: true });
+    mainWindow?.webContents.send('set-drag', enabled);
+    updateTrayMenu();
+}
+
 function updateTrayMenu() {
     const amounts = [1, 5, 10, 50, 100];
 
@@ -82,6 +129,54 @@ function updateTrayMenu() {
                 label: `${n} drones`,
                 click: () => setDrones(n)
             }))
+        },
+        { type: 'separator' },
+        {
+            label: 'Settings',
+            submenu: [
+                {
+                    label: 'Move Speed',
+                    submenu: [
+                        { label: 'Very Slow (10-20)', click: () => setMoveSpeed(10, 20) },
+                        { label: 'Slow (20-40)', click: () => setMoveSpeed(20, 40) },
+                        { label: 'Normal (20-50)', type: 'checkbox', checked: settings.moveSpeed.min === 20 && settings.moveSpeed.max === 50, click: () => setMoveSpeed(20, 50) },
+                        { label: 'Fast (40-80)', click: () => setMoveSpeed(40, 80) },
+                        { label: 'Very Fast (60-120)', click: () => setMoveSpeed(60, 120) },
+                    ]
+                },
+                {
+                    label: 'Sprite Animation',
+                    submenu: [
+                        { label: 'Very Fast (0.03s)', click: () => setSpriteSpeed(0.03) },
+                        { label: 'Fast (0.05s)', click: () => setSpriteSpeed(0.05) },
+                        { label: 'Normal (0.06s)', type: 'checkbox', checked: settings.spriteSpeed === 0.06, click: () => setSpriteSpeed(0.06) },
+                        { label: 'Slow (0.08s)', click: () => setSpriteSpeed(0.08) },
+                        { label: 'Very Slow (0.12s)', click: () => setSpriteSpeed(0.12) },
+                    ]
+                },
+                {
+                    label: 'Hover Effect',
+                    submenu: [
+                        { label: 'Off', type: 'checkbox', checked: settings.hoverAmplitude === 0, click: () => setHover(0, 500) },
+                        { label: 'Subtle (1.5px)', click: () => setHover(1.5, 500) },
+                        { label: 'Normal (3px)', click: () => setHover(3, 500) },
+                        { label: 'Strong (5px)', click: () => setHover(5, 500) },
+                    ]
+                },
+                { type: 'separator' },
+                {
+                    label: 'Collision',
+                    type: 'checkbox',
+                    checked: settings.collisionEnabled,
+                    click: () => setCollision(!settings.collisionEnabled)
+                },
+                {
+                    label: 'Drag with Mouse',
+                    type: 'checkbox',
+                    checked: settings.dragEnabled,
+                    click: () => setDrag(!settings.dragEnabled)
+                },
+            ]
         },
         { type: 'separator' },
         {
@@ -115,7 +210,8 @@ function createWindow() {
         resizable: false,
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false
+            contextIsolation: false,
+            backgroundThrottling: false
         }
     });
 

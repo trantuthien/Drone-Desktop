@@ -15,6 +15,7 @@
             display: block;
             width: 100vw;
             height: 100vh;
+            will-change: contents;
         }
     </style>
 </head>
@@ -25,6 +26,17 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
+        // ========== DEFAULT SETTINGS (thay đổi giá trị ở đây) ==========
+        const config = {
+            moveSpeed: { min: 20, max: 50 },     // Tốc độ di chuyển (px/s)
+            spriteSpeed: 0.06,                   // Tốc độ xoay sprite (giây/frame, nhỏ = nhanh)
+            hoverAmplitude: 0,                   // Biên độ hover (px, 0 = tắt)
+            hoverPeriod: 500,                    // Chu kỳ hover (ms)
+            collisionEnabled: true,              // Bật/tắt va chạm
+            dragEnabled: false,                  // Bật/tắt kéo thả chuột
+        };
+        // ================================================================
+
         // Sprite config
         const DIR_COUNT = 8;
         const ANIM_FRAMES = 12;
@@ -34,7 +46,17 @@
         const MAX_HITS = 3;
 
         const spriteFrames = {};
-        let spriteSheet = null;  // Single image instead of 96 canvases
+        let spriteSheet = null;
+        const SECTOR_TO_DIR = [6, 7, 0, 1, 2, 3, 4, 5];
+
+        // Pre-compute frame names để tránh string allocation mỗi frame
+        const FRAME_NAMES = [];
+        for (let dir = 0; dir < 8; dir++) {
+            FRAME_NAMES[dir] = [];
+            for (let f = 0; f < 12; f++) {
+                FRAME_NAMES[dir][f] = `drone5_${dir}-${f.toString().padStart(2, '0')}`;
+            }
+        }
 
         // Embedded sprite data
         const SPRITE_DATA = {"frames":[["drone5_0-11",1,1,62,47,-18,-21,96,96],["drone5_1-05",65,1,62,47,-18,-21,96,96],["drone5_1-08",129,1,63,47,-17,-21,96,96],["drone5_0-03",194,1,59,48,-19,-21,96,96],["drone5_2-02",1,50,62,47,-18,-21,96,96],["drone5_2-05",65,50,63,47,-17,-21,96,96],["drone5_2-11",130,50,62,47,-18,-21,96,96],["drone5_1-00",194,51,59,48,-19,-21,96,96],["drone5_3-05",1,99,62,47,-18,-21,96,96],["drone5_3-08",65,99,63,47,-17,-21,96,96],["drone5_4-02",130,99,62,47,-18,-21,96,96],["drone5_3-00",194,101,59,48,-19,-21,96,96],["drone5_4-05",1,148,63,47,-17,-21,96,96],["drone5_4-11",66,148,62,47,-18,-21,96,96],["drone5_6-05",130,148,62,47,-17,-21,96,96],["drone5_6-04",194,151,59,48,-19,-21,96,96],["drone5_5-08",1,197,63,47,-17,-21,96,96],["drone5_0-02",66,197,62,48,-18,-21,96,96],["drone5_0-08",130,197,62,48,-18,-21,96,96],["drone5_0-00",194,201,58,49,-20,-21,96,96],["drone5_0-05",1,246,63,48,-17,-21,96,96],["drone5_1-02",66,247,62,48,-18,-21,96,96],["drone5_1-07",130,247,61,48,-18,-21,96,96],["drone5_2-03",193,252,60,48,-19,-21,96,96],["drone5_1-11",1,296,62,48,-18,-21,96,96],["drone5_2-04",65,297,61,48,-18,-21,96,96],["drone5_2-08",128,297,62,48,-18,-21,96,96],["drone5_4-03",192,302,60,48,-19,-21,96,96],["drone5_3-02",1,346,62,48,-18,-21,96,96],["drone5_3-11",65,347,62,48,-18,-21,96,96],["drone5_4-04",129,347,61,48,-18,-21,96,96],["drone5_5-00",192,352,61,48,-18,-21,96,96],["drone5_4-08",1,396,62,48,-18,-21,96,96],["drone5_5-02",65,397,62,48,-18,-21,96,96],["drone5_5-07",129,397,60,48,-19,-21,96,96],["drone5_5-05",191,402,62,48,-18,-21,96,96],["drone5_5-11",1,446,62,48,-18,-21,96,96],["drone5_6-02",65,447,62,48,-18,-21,96,96],["drone5_0-04",129,447,59,49,-19,-21,96,96],["drone5_6-08",190,452,62,48,-18,-21,96,96],["drone5_6-11",1,496,62,48,-18,-21,96,96],["drone5_7-05",65,497,62,48,-18,-21,96,96],["drone5_0-06",129,498,59,49,-19,-21,96,96],["drone5_7-02",190,502,63,48,-17,-21,96,96],["drone5_7-11",1,546,62,48,-18,-21,96,96],["drone5_0-01",65,547,61,49,-19,-21,96,96],["drone5_0-09",128,549,59,49,-20,-21,96,96],["drone5_7-08",189,552,63,48,-17,-21,96,96],["drone5_0-07",1,596,61,49,-18,-21,96,96],["drone5_0-10",64,598,62,49,-18,-21,96,96],["drone5_1-01",128,600,59,49,-19,-21,96,96],["drone5_1-03",189,602,59,49,-19,-21,96,96],["drone5_1-04",1,647,60,49,-19,-21,96,96],["drone5_1-06",63,649,60,49,-19,-21,96,96],["drone5_1-09",125,651,59,49,-19,-21,96,96],["drone5_1-10",186,653,60,49,-19,-21,96,96],["drone5_2-00",1,698,58,49,-20,-21,96,96],["drone5_2-01",61,700,61,49,-19,-21,96,96],["drone5_2-06",124,702,59,49,-19,-21,96,96],["drone5_2-07",185,704,60,49,-19,-21,96,96],["drone5_6-09",1,749,57,49,-21,-21,96,96],["drone5_2-09",60,751,59,49,-20,-21,96,96],["drone5_2-10",121,753,60,49,-19,-21,96,96],["drone5_3-01",183,755,59,49,-19,-21,96,96],["drone5_3-03",1,802,59,49,-19,-21,96,96],["drone5_3-04",62,804,60,49,-19,-21,96,96],["drone5_3-06",124,806,60,49,-19,-21,96,96],["drone5_3-07",186,806,61,49,-18,-21,96,96],["drone5_3-09",1,853,59,49,-19,-21,96,96],["drone5_3-10",62,855,60,49,-19,-21,96,96],["drone5_4-00",124,857,58,49,-20,-21,96,96],["drone5_4-01",184,857,61,49,-19,-21,96,96],["drone5_4-06",1,904,59,49,-19,-21,96,96],["drone5_4-07",62,906,60,49,-19,-21,96,96],["drone5_4-09",124,908,59,49,-20,-21,96,96],["drone5_4-10",185,908,60,49,-19,-21,96,96],["drone5_5-03",1,955,58,49,-20,-21,96,96],["drone5_5-01",61,957,61,49,-18,-21,96,96],["drone5_5-04",124,959,60,49,-19,-21,96,96],["drone5_5-06",186,959,60,49,-19,-21,96,96],["drone5_6-00",1,1006,58,49,-20,-21,96,96],["drone5_5-09",61,1008,61,49,-18,-21,96,96],["drone5_5-10",124,1010,61,49,-18,-21,96,96],["drone5_6-01",187,1010,61,49,-19,-21,96,96],["drone5_7-06",1,1057,58,49,-20,-21,96,96],["drone5_6-03",61,1059,60,49,-19,-21,96,96],["drone5_6-06",123,1061,59,49,-19,-21,96,96],["drone5_6-07",184,1061,62,49,-18,-21,96,96],["drone5_6-10",1,1110,60,49,-19,-21,96,96],["drone5_7-00",63,1112,61,49,-18,-21,96,96],["drone5_7-01",126,1112,59,49,-19,-21,96,96],["drone5_7-03",187,1112,59,49,-19,-21,96,96],["drone5_7-07",1,1161,59,49,-19,-21,96,96],["drone5_7-04",62,1163,62,49,-18,-21,96,96],["drone5_7-09",126,1163,61,49,-18,-21,96,96],["drone5_7-10",189,1163,60,49,-19,-21,96,96]]};
@@ -51,6 +73,7 @@
         // Game state
         let drones = [];
         let targetDroneCount = 3;
+        let draggedDrone = null;
 
         // Drone class
         class Drone {
@@ -61,7 +84,7 @@
             reset() {
                 this.x = Math.random() * (window.innerWidth - 100);
                 this.y = Math.random() * (window.innerHeight - 100);
-                const speed = 40 + Math.random() * 60;
+                const speed = config.moveSpeed.min + Math.random() * (config.moveSpeed.max - config.moveSpeed.min);
                 const angle = Math.random() * Math.PI * 2;
                 this.vx = Math.cos(angle) * speed;
                 this.vy = Math.sin(angle) * speed;
@@ -101,7 +124,7 @@
             }
 
             update(dt) {
-                if (this.dead) return;
+                if (this.dead || this === draggedDrone) return;
 
                 this.collisionCooldown = Math.max(0, this.collisionCooldown - dt);
 
@@ -124,7 +147,7 @@
                 }
 
                 this.frameTime += dt;
-                if (this.frameTime >= 0.03) {
+                if (this.frameTime >= config.spriteSpeed) {
                     this.frame = (this.frame + 1) % ANIM_FRAMES;
                     this.frameTime = 0;
                 }
@@ -133,25 +156,25 @@
             draw(ctx, time) {
                 if (this.dead || !spriteSheet) return;
 
-                const hoverY = Math.sin(time / 200 + this.hoverOffset) * 3;
+                const hoverY = config.hoverAmplitude > 0
+                    ? Math.sin(time / config.hoverPeriod + this.hoverOffset) * config.hoverAmplitude
+                    : 0;
 
                 const angle = Math.atan2(this.vy, this.vx);
                 const normalizedAngle = (angle + Math.PI * 2) % (Math.PI * 2);
                 const sector = Math.floor((normalizedAngle + Math.PI / 8) / (Math.PI / 4)) % 8;
-                const sectorToDir = [6, 7, 0, 1, 2, 3, 4, 5];
-                const dir = sectorToDir[sector];
+                const dir = SECTOR_TO_DIR[sector];
 
-                // Draw directly from sprite sheet
-                const frameName = `drone5_${dir}-${this.frame.toString().padStart(2, '0')}`;
-                const fd = spriteFrames[frameName];
+                const fd = spriteFrames[FRAME_NAMES[dir][this.frame]];
                 if (!fd) return;
 
                 ctx.globalAlpha = this.alpha;
+                const drawX = (this.x - fd.offsetX * this.scale) | 0;
+                const drawY = (this.y + hoverY - fd.offsetY * this.scale) | 0;
                 ctx.drawImage(
                     spriteSheet,
                     fd.x, fd.y, fd.w, fd.h,
-                    this.x - fd.offsetX * this.scale,
-                    this.y + hoverY - fd.offsetY * this.scale,
+                    drawX, drawY,
                     fd.w * this.scale, fd.h * this.scale
                 );
                 ctx.globalAlpha = 1;
@@ -159,6 +182,7 @@
         }
 
         function checkAllCollisions() {
+            if (!config.collisionEnabled) return;
             for (let i = 0; i < drones.length; i++) {
                 for (let j = i + 1; j < drones.length; j++) {
                     if (drones[i].dead || drones[j].dead) continue;
@@ -171,7 +195,12 @@
         }
 
         function cleanupDrones() {
-            drones = drones.filter(d => !d.dead);
+            // In-place removal để tránh GC
+            for (let i = drones.length - 1; i >= 0; i--) {
+                if (drones[i].dead) {
+                    drones.splice(i, 1);
+                }
+            }
 
             if (drones.length === 0 && targetDroneCount > 0) {
                 for (let i = 0; i < targetDroneCount; i++) {
@@ -246,63 +275,117 @@
             ipcRenderer.on('remove-drones', (_, n) => removeDrones(n));
             ipcRenderer.on('set-drones', (_, n) => setDrones(n));
             ipcRenderer.on('reset', resetDrones);
+
+            // Settings handlers
+            ipcRenderer.on('set-move-speed', (_, { min, max }) => {
+                config.moveSpeed.min = min;
+                config.moveSpeed.max = max;
+            });
+            ipcRenderer.on('set-sprite-speed', (_, speed) => {
+                config.spriteSpeed = speed;
+            });
+            ipcRenderer.on('set-hover', (_, { amplitude, period }) => {
+                config.hoverAmplitude = amplitude;
+                config.hoverPeriod = period;
+            });
+            ipcRenderer.on('set-collision', (_, enabled) => {
+                config.collisionEnabled = enabled;
+            });
+            ipcRenderer.on('set-drag', (_, enabled) => {
+                config.dragEnabled = enabled;
+                canvas.style.cursor = enabled ? 'grab' : 'default';
+            });
         }
+
+        // Drag functionality
+        let dragOffset = { x: 0, y: 0 };
+
+        function findDroneAt(x, y) {
+            for (let i = drones.length - 1; i >= 0; i--) {
+                const d = drones[i];
+                if (d.dead) continue;
+                const cx = d.x + (FRAME_W * d.scale) / 2;
+                const cy = d.y + (FRAME_H * d.scale) / 2;
+                const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+                if (dist < COLLISION_RADIUS * d.scale) {
+                    return d;
+                }
+            }
+            return null;
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (!config.dragEnabled) return;
+            const drone = findDroneAt(e.clientX, e.clientY);
+            if (drone) {
+                draggedDrone = drone;
+                dragOffset.x = e.clientX - drone.x;
+                dragOffset.y = e.clientY - drone.y;
+                drone.vx = 0;
+                drone.vy = 0;
+                canvas.style.cursor = 'grabbing';
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!config.dragEnabled) return;
+            if (draggedDrone) {
+                draggedDrone.x = e.clientX - dragOffset.x;
+                draggedDrone.y = e.clientY - dragOffset.y;
+            } else {
+                const drone = findDroneAt(e.clientX, e.clientY);
+                canvas.style.cursor = drone ? 'grab' : 'default';
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (draggedDrone) {
+                canvas.style.cursor = config.dragEnabled ? 'grab' : 'default';
+                draggedDrone = null;
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            if (draggedDrone) {
+                draggedDrone = null;
+                canvas.style.cursor = config.dragEnabled ? 'grab' : 'default';
+            }
+        });
 
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
 
-        // Performance: 30 FPS instead of 60
-        const TARGET_FPS = 30;
-        const FRAME_INTERVAL = 1000 / TARGET_FPS;
-        let lastTime = 0;
-        let lastFrameTime = 0;
         let isVisible = true;
         let frameCount = 0;
+        let animTime = 0;
+        const FIXED_DT = 1 / 60;
+        const FRAME_MS = 1000 / 60;
 
-        function loop(time) {
-            // Skip if window hidden
-            if (!isVisible) {
-                requestAnimationFrame(loop);
-                return;
-            }
+        function loop() {
+            if (!isVisible) return;
 
-            // FPS throttling
-            const elapsed = time - lastFrameTime;
-            if (elapsed < FRAME_INTERVAL) {
-                requestAnimationFrame(loop);
-                return;
-            }
-            lastFrameTime = time - (elapsed % FRAME_INTERVAL);
-
-            const dt = lastTime ? (time - lastTime) / 1000 : 0;
-            lastTime = time;
+            frameCount++;
+            animTime += FRAME_MS;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            for (const d of drones) {
-                d.update(Math.min(dt, 0.1));
+            const len = drones.length;
+            for (let i = 0; i < len; i++) {
+                drones[i].update(FIXED_DT);
             }
 
-            // Check collisions every 2 frames (saves CPU)
-            frameCount++;
-            if (frameCount % 2 === 0) {
-                checkAllCollisions();
-                cleanupDrones();
-            }
+            checkAllCollisions();
+            if (frameCount % 60 === 0) cleanupDrones();
 
-            for (const d of drones) {
-                d.draw(ctx, time);
+            for (let i = 0; i < len; i++) {
+                drones[i].draw(ctx, animTime);
             }
-
-            requestAnimationFrame(loop);
         }
 
-        // Pause when not visible
         document.addEventListener('visibilitychange', () => {
             isVisible = !document.hidden;
-            if (isVisible) lastTime = 0;
         });
 
         function init() {
@@ -313,12 +396,12 @@
             const img = new Image();
             img.src = 'drone5_0-a87912ea5.png';
             img.onload = () => {
-                spriteSheet = img;  // Just store reference
+                spriteSheet = img;
                 for (let i = 0; i < targetDroneCount; i++) {
                     drones.push(new Drone());
                 }
                 syncCount();
-                requestAnimationFrame(loop);
+                setInterval(loop, FRAME_MS);
             };
         }
 

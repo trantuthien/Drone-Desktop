@@ -12,10 +12,12 @@ A fun, lightweight desktop companion app that displays animated drones flying ar
 
 - Transparent overlay - drones fly over all windows
 - Smooth 8-directional animation with rotating propellers
-- Collision system - drones bump and fade after 3 hits
+- Collision system - drones bump and fade after 3 hits (toggleable)
 - Auto-respawn when all drones are destroyed
 - Menu bar controls - no screen clutter
 - Click-through - doesn't block your work
+- **Drag & drop** - grab and move drones with mouse (optional)
+- **Settings menu** - customize speed, animation, hover effect
 - Lightweight (~150KB without node_modules)
 
 ## Quick Start
@@ -40,8 +42,34 @@ That's it! Look for the drone icon in your menu bar.
 | **Add** | +1, +5, +10, +50, +100 drones |
 | **Remove** | -1, -5, -10, -50, -100 drones |
 | **Set to** | 1, 3, 5, 10, 25, 50, 100, 200 drones |
+| **Settings** | See below |
 | **Reset** | Respawn all drones |
 | **Quit** | Exit app |
+
+### Settings
+
+| Setting | Options |
+|---------|---------|
+| **Move Speed** | Very Slow, Slow, Normal, Fast, Very Fast |
+| **Sprite Animation** | Very Fast, Fast, Normal, Slow, Very Slow |
+| **Hover Effect** | Off, Subtle, Normal, Strong |
+| **Collision** | On/Off - drones bump into each other |
+| **Drag with Mouse** | On/Off - click and drag drones |
+
+### Default Values
+
+Edit these in `main.js` (lines 12-20) or `index.html` (lines 29-37):
+
+```javascript
+const settings = {
+    moveSpeed: { min: 20, max: 50 },  // px/s
+    spriteSpeed: 0.06,                 // seconds per frame
+    hoverAmplitude: 0,                 // px (0 = off)
+    hoverPeriod: 500,                  // ms
+    collisionEnabled: true,
+    dragEnabled: false,
+};
+```
 
 ## For AI Agents
 
@@ -74,20 +102,19 @@ The drone sprite used in this project is from **Forge of Empires** by InnoGames.
 
 ## Performance
 
-**Resource usage (optimized):**
-- CPU: ~9% (1 drone at 30 FPS)
+**Resource usage:**
+- CPU: ~5-10% (3 drones at 60 FPS)
 - RAM: ~330 MB (Electron baseline)
 
 **Optimizations applied:**
-- 30 FPS rendering (vs 60 FPS default)
-- No shadow/filter effects (GPU-heavy)
+- Fixed timestep physics (smooth movement)
+- Pre-computed frame names (zero GC in hot path)
+- Integer pixel positioning (no sub-pixel blur)
 - Direct sprite sheet rendering (no pre-slicing)
-- Collision detection every 2 frames
 - Auto-pause when window hidden
+- Disabled vsync for reduced latency
 
 **For AI Agents - Further optimization ideas:**
-- Reduce to 20 FPS for lower CPU
-- Skip more frames for collision detection
 - Use CSS sprites instead of Canvas (experimental)
 - Port to native Swift/Objective-C for lower RAM (~50MB vs ~330MB)
 
