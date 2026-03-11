@@ -24,7 +24,7 @@ A fun, lightweight desktop companion app that displays animated drones flying ar
 
 ```bash
 # Clone
-git clone https://github.com/user/drone-desktop.git
+git clone https://github.com/trantuthien/Drone-Desktop.git
 cd drone-desktop
 
 # Run
@@ -49,7 +49,7 @@ If you're an AI assistant helping someone set up this app:
 
 ```bash
 # One-liner install and run
-git clone https://github.com/user/drone-desktop.git && cd drone-desktop && ./run.sh
+git clone https://github.com/trantuthien/Drone-Desktop.git && cd drone-desktop && ./run.sh
 ```
 
 **Common tasks:**
@@ -71,6 +71,25 @@ The drone sprite used in this project is from **Forge of Empires** by InnoGames.
 - **Rendering:** HTML5 Canvas
 - **Sprite format:** Packed texture atlas with JSON metadata
 - **Animation:** 8 directions × 12 frames = 96 total frames
+
+## Performance
+
+**Resource usage (optimized):**
+- CPU: ~9% (1 drone at 30 FPS)
+- RAM: ~330 MB (Electron baseline)
+
+**Optimizations applied:**
+- 30 FPS rendering (vs 60 FPS default)
+- No shadow/filter effects (GPU-heavy)
+- Direct sprite sheet rendering (no pre-slicing)
+- Collision detection every 2 frames
+- Auto-pause when window hidden
+
+**For AI Agents - Further optimization ideas:**
+- Reduce to 20 FPS for lower CPU
+- Skip more frames for collision detection
+- Use CSS sprites instead of Canvas (experimental)
+- Port to native Swift/Objective-C for lower RAM (~50MB vs ~330MB)
 
 ## Development
 
