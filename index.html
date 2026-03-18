@@ -72,7 +72,7 @@
 
         // Game state
         let drones = [];
-        let targetDroneCount = 3;
+        let targetDroneCount = 1;
         let draggedDrone = null;
 
         // Drone class
@@ -294,6 +294,22 @@
             ipcRenderer.on('set-drag', (_, enabled) => {
                 config.dragEnabled = enabled;
                 canvas.style.cursor = enabled ? 'grab' : 'default';
+            });
+
+            // Screen change handler
+            ipcRenderer.on('screen-changed', (_, { width, height }) => {
+                canvas.width = width;
+                canvas.height = height;
+                // Đưa drones về trong bounds mới
+                for (const d of drones) {
+                    d.x = Math.min(d.x, width - FRAME_W * d.scale);
+                    d.y = Math.min(d.y, height - FRAME_H * d.scale);
+                }
+            });
+
+            // Resume sau khi unlock screen
+            ipcRenderer.on('resume', () => {
+                isVisible = true;
             });
         }
 

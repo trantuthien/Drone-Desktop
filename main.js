@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage, powerMonitor } = require('electron');
 const path = require('path');
 
 // Disable vsync và enable smooth scrolling
@@ -7,7 +7,7 @@ app.commandLine.appendSwitch('disable-frame-rate-limit');
 
 let mainWindow;
 let tray;
-let droneCount = 3;
+let droneCount = 1;
 
 // ========== DEFAULT SETTINGS (thay đổi giá trị ở đây) ==========
 const settings = {
@@ -15,7 +15,7 @@ const settings = {
     spriteSpeed: 0.06,                   // Tốc độ xoay sprite (giây/frame, nhỏ = nhanh)
     hoverAmplitude: 0,                   // Biên độ hover (px, 0 = tắt)
     hoverPeriod: 500,                    // Chu kỳ hover (ms)
-    collisionEnabled: true,              // Bật/tắt va chạm
+    collisionEnabled: false,              // Bật/tắt va chạm
     dragEnabled: false,                  // Bật/tắt kéo thả chuột
 };
 // ================================================================
@@ -31,7 +31,7 @@ function createTray() {
         trayIcon = nativeImage.createFromBuffer(
             Buffer.from([
                 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
-                0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10,
+                0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10,~
                 0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0xF3, 0xFF, 0x61, 0x00, 0x00, 0x00,
                 0x01, 0x73, 0x52, 0x47, 0x42, 0x00, 0xAE, 0xCE, 0x1C, 0xE9, 0x00, 0x00,
                 0x00, 0x44, 0x49, 0x44, 0x41, 0x54, 0x38, 0x4F, 0x63, 0x60, 0x00, 0x02,
@@ -194,6 +194,13 @@ function updateTrayMenu() {
     tray.setContextMenu(contextMenu);
 }
 
+function updateWindowBounds() {
+    if (!mainWindow) return;
+    const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+    mainWindow.setBounds({ x: 0, y: 0, width, height });
+    mainWindow.webContents.send('screen-changed', { width, height });
+}
+
 function createWindow() {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
@@ -218,13 +225,26 @@ function createWindow() {
     // Click-through hoàn toàn
     mainWindow.setIgnoreMouseEvents(true);
 
-    // Ẩn khỏi dock trên macOS
+    // Hiển thị trên tất cả workspaces và fullscreen
+    mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
+    // macOS: hiển thị trên lock screen (level cao hơn)
     if (process.platform === 'darwin') {
         app.dock.hide();
+        mainWindow.setAlwaysOnTop(true, 'screen-saver');
     }
 
     mainWindow.loadFile('index.html');
 
+    // Lắng nghe thay đổi màn hình
+    screen.on('display-added', updateWindowBounds);
+    screen.on('display-removed', updateWindowBounds);
+    screen.on('display-metrics-changed', updateWindowBounds);
+
+    // Tiếp tục chạy khi unlock
+    powerMonitor.on('unlock-screen', () => {
+        mainWindow?.webContents.send('resume');
+    });
 }
 
 // IPC handlers
