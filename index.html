@@ -32,7 +32,7 @@
             spriteSpeed: 0.06,                   // Tốc độ xoay sprite (giây/frame, nhỏ = nhanh)
             hoverAmplitude: 0,                   // Biên độ hover (px, 0 = tắt)
             hoverPeriod: 500,                    // Chu kỳ hover (ms)
-            collisionEnabled: true,              // Bật/tắt va chạm
+            collisionEnabled: false,              // Bật/tắt va chạm
             dragEnabled: false,                  // Bật/tắt kéo thả chuột
         };
         // ================================================================
@@ -132,7 +132,8 @@
                 this.y += this.vy * dt;
 
                 const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                if (speed > 100) {
+                const maxAllowedSpeed = Math.max(100, config.moveSpeed.max * 1.5);
+                if (speed > maxAllowedSpeed) {
                     this.vx *= 0.98;
                     this.vy *= 0.98;
                 }
