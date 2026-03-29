@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nemo Fish Sprite Generator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    padding: 20px;
+  }
+  h1 { color: #FF6B35; margin-bottom: 10px; }
+  .subtitle { color: #888; margin-bottom: 20px; font-size: 14px; }
+  .buttons { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+  button {
+    background: #FF6B35;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  button:hover { background: #e05a28; }
+  button:disabled { background: #555; cursor: not-allowed; }
+  #status { color: #aaa; margin-bottom: 15px; font-size: 13px; min-height: 20px; }
+  .section-title { color: #FF8C5A; margin: 15px 0 8px; font-size: 15px; }
+  #preview-area {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    margin-bottom: 20px; min-height: 50px;
+  }
+  .dir-preview {
+    background: #0f0f23;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 6px;
+    text-align: center;
+  }
+  .dir-preview .label { font-size: 11px; color: #888; margin-top: 4px; }
+  #atlas-container {
+    margin-bottom: 20px;
+    overflow: auto;
+    max-height: 400px;
+    background: #0f0f23;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 8px;
+  }
+  #atlas-canvas { image-rendering: pixelated; }
+  #sprite-data-output {
+    background: #0f0f23;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 11px;
+    max-height: 300px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+</style>
+</head>
+<body>
+<h1>Nemo Fish Sprite Generator</h1>
+<p class="subtitle">Generates a clownfish pixel art sprite sheet (8 directions x 12 frames)</p>
+
+<div class="buttons">
+  <button id="btn-generate" onclick="generate()">Generate</button>
+  <button id="btn-download" onclick="downloadPNG()" disabled>Download PNG</button>
+  <button id="btn-copy" onclick="copySpriteData()" disabled>Copy SPRITE_DATA</button>
+</div>
+
+<div id="status">Click Generate to create the sprite sheet.</div>
+
+<div class="section-title">Direction Previews</div>
+<div id="preview-area"></div>
+
+<div class="section-title">Texture Atlas</div>
+<div id="atlas-container">
+  <canvas id="atlas-canvas"></canvas>
+</div>
+
+<div class="section-title">SPRITE_DATA</div>
+<div id="sprite-data-output"></div>
+
+<script>
+// === Configuration ===
+const FRAME_W = 60;
+const FRAME_H = 48;
+const LOGICAL_W = 96;
+const LOGICAL_H = 96;
+const ANIM_FRAMES = 12;
+const DIRECTIONS = 8;
+const ATLAS_W = 254;
+const PADDING = 1;
+
+// === Colors ===
+const COL_ORANGE    = '#FF6B35';
+const COL_WHITE     = '#FFFFFF';
+const COL_BLACK     = '#1A1A1A';
+const COL_FIN       = '#FF8C5A';
+const COL_FIN_EDGE  = '#222222';
+const COL_STRIPE_EDGE = '#2A2A2A';
+
+// Storage
+let allFrames = {}; // key: "dir-frame" -> canvas
+let spriteDataJSON = '';
+let atlasCanvas = null;
+const DIR_NAMES = ['Up', 'Up-Right', 'Right', 'Down-Right', 'Down', 'Down-Left', 'Left', 'Up-Left'];
+
+// === Drawing primitives ===
+function drawPixel(ctx, x, y, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(Math.round(x), Math.round(y), 1, 1);
+}
+
+function drawEllipsePixels(ctx, cx, cy, rx, ry, color) {
+  ctx.fillStyle = color;
+  for (let dy = -ry; dy <= ry; dy++) {
+    for (let dx = -rx; dx <= rx; dx++) {
+      if ((dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1) {
+        ctx.fillRect(Math.round(cx + dx), Math.round(cy + dy), 1, 1);
+      }
+    }
+  }
+}
+
+function drawEllipseOutline(ctx, cx, cy, rx, ry, color) {
+  ctx.fillStyle = color;
+  for (let dy = -ry - 1; dy <= ry + 1; dy++) {
+    for (let dx = -rx - 1; dx <= rx + 1; dx++) {
+      const inside = (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry);
+      const outerRx = rx + 1, outerRy = ry + 1;
+      const outside = (dx * dx) / (outerRx * outerRx) + (dy * dy) / (outerRy * outerRy);
+      if (inside > 1 && outside <= 1) {
+        ctx.fillRect(Math.round(cx + dx), Math.round(cy + dy), 1, 1);
+      }
+    }
+  }
+}
+
+// === Draw one frame of clownfish facing right ===
+function drawClownfishRight(ctx, tailAngle, finOffset) {
+  const cx = 28;
+  const cy = 24;
+
+  // --- Tail fin ---
+  const tailBaseX = cx - 14;
+  const tailBaseY = cy;
+  const tailLen = 10;
+  const tailSpread = 6;
+  const tailOffsetY = Math.sin(tailAngle) * 3;
+
+  ctx.fillStyle = COL_ORANGE;
+  ctx.beginPath();
+  ctx.moveTo(tailBaseX, tailBaseY);
+  ctx.lineTo(tailBaseX - tailLen, tailBaseY - tailSpread + tailOffsetY);
+  ctx.lineTo(tailBaseX - tailLen + 2, tailBaseY + tailOffsetY);
+  ctx.lineTo(tailBaseX - tailLen, tailBaseY + tailSpread + tailOffsetY);
+  ctx.closePath();
+  ctx.fill();
+
+  // Tail outline
+  ctx.strokeStyle = COL_BLACK;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Tail stripes
+  ctx.fillStyle = COL_WHITE;
+  const tsx = tailBaseX - 4;
+  for (let i = -2; i <= 2; i++) {
+    drawPixel(ctx, tsx, tailBaseY + i + tailOffsetY * 0.5, COL_WHITE);
+  }
+
+  // --- Body (orange oval) ---
+  drawEllipseOutline(ctx, cx, cy, 14, 10, COL_BLACK);
+  drawEllipsePixels(ctx, cx, cy, 14, 10, COL_ORANGE);
+
+  // --- White stripes with black edges ---
+  // Head stripe (near head)
+  const s1x = cx + 8;
+  for (let dy = -7; dy <= 7; dy++) {
+    if (Math.abs(dy) <= 8) {
+      const inBody = (1 * 1) / (14 * 14) + (dy * dy) / (10 * 10);
+      if (inBody <= 1) {
+        drawPixel(ctx, s1x - 1, cy + dy, COL_STRIPE_EDGE);
+        drawPixel(ctx, s1x, cy + dy, COL_WHITE);
+        drawPixel(ctx, s1x + 1, cy + dy, COL_WHITE);
+        drawPixel(ctx, s1x + 2, cy + dy, COL_STRIPE_EDGE);
+      }
+    }
+  }
+
+  // Middle stripe
+  const s2x = cx;
+  for (let dy = -9; dy <= 9; dy++) {
+    const inBody = (0) / (14 * 14) + (dy * dy) / (10 * 10);
+    if (inBody <= 1) {
+      drawPixel(ctx, s2x - 1, cy + dy, COL_STRIPE_EDGE);
+      drawPixel(ctx, s2x, cy + dy, COL_WHITE);
+      drawPixel(ctx, s2x + 1, cy + dy, COL_WHITE);
+      drawPixel(ctx, s2x + 2, cy + dy, COL_STRIPE_EDGE);
+    }
+  }
+
+  // Tail stripe (near tail)
+  const s3x = cx - 8;
+  for (let dy = -6; dy <= 6; dy++) {
+    const dx = s3x - cx;
+    const inBody = (dx * dx) / (14 * 14) + (dy * dy) / (10 * 10);
+    if (inBody <= 1) {
+      drawPixel(ctx, s3x - 1, cy + dy, COL_STRIPE_EDGE);
+      drawPixel(ctx, s3x, cy + dy, COL_WHITE);
+      drawPixel(ctx, s3x + 1, cy + dy, COL_WHITE);
+      drawPixel(ctx, s3x + 2, cy + dy, COL_STRIPE_EDGE);
+    }
+  }
+
+  // --- Dorsal fin (top) ---
+  const dorsalY = cy - 10 + Math.round(finOffset * 0.5);
+  ctx.fillStyle = COL_FIN;
+  ctx.beginPath();
+  ctx.moveTo(cx - 3, dorsalY);
+  ctx.lineTo(cx + 1, dorsalY - 5);
+  ctx.lineTo(cx + 5, dorsalY);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = COL_FIN_EDGE;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // --- Ventral fin (bottom) ---
+  const ventralY = cy + 10 - Math.round(finOffset * 0.3);
+  ctx.fillStyle = COL_FIN;
+  ctx.beginPath();
+  ctx.moveTo(cx - 2, ventralY);
+  ctx.lineTo(cx + 1, ventralY + 4);
+  ctx.lineTo(cx + 4, ventralY);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = COL_FIN_EDGE;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // --- Pectoral fin (side) ---
+  const pectX = cx + 4;
+  const pectY = cy + 2 + Math.round(finOffset * 0.5);
+  ctx.fillStyle = COL_FIN;
+  ctx.beginPath();
+  ctx.moveTo(pectX, pectY);
+  ctx.lineTo(pectX + 5, pectY + 2);
+  ctx.lineTo(pectX + 2, pectY + 4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = COL_FIN_EDGE;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // --- Eye ---
+  const eyeX = cx + 10;
+  const eyeY = cy - 2;
+  // White of eye
+  drawEllipsePixels(ctx, eyeX, eyeY, 2, 2, COL_WHITE);
+  // Pupil
+  drawPixel(ctx, eyeX + 1, eyeY, COL_BLACK);
+  drawPixel(ctx, eyeX + 1, eyeY + 1, COL_BLACK);
+  drawPixel(ctx, eyeX, eyeY + 1, COL_BLACK);
+  drawPixel(ctx, eyeX, eyeY, COL_BLACK);
+  // Highlight
+  drawPixel(ctx, eyeX, eyeY - 1, COL_WHITE);
+
+  // --- Mouth ---
+  drawPixel(ctx, cx + 13, cy + 1, COL_BLACK);
+  drawPixel(ctx, cx + 14, cy + 2, COL_BLACK);
+}
+
+// === Frame generation ===
+function generateRightFrames() {
+  const frames = [];
+  for (let i = 0; i < ANIM_FRAMES; i++) {
+    const t = (i / ANIM_FRAMES) * Math.PI * 2;
+    const tailAngle = Math.sin(t) * 0.35;
+    const finOffset = Math.sin(t + 0.5) * 1.5;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = FRAME_W;
+    canvas.height = FRAME_H;
+    const ctx = canvas.getContext('2d');
+    drawClownfishRight(ctx, tailAngle, finOffset);
+    frames.push(canvas);
+  }
+  return frames;
+}
+
+function rotateFrame(srcCanvas, angle) {
+  const dst = document.createElement('canvas');
+  dst.width = FRAME_W;
+  dst.height = FRAME_H;
+  const ctx = dst.getContext('2d');
+  ctx.translate(FRAME_W / 2, FRAME_H / 2);
+  ctx.rotate(angle);
+  ctx.drawImage(srcCanvas, -FRAME_W / 2, -FRAME_H / 2);
+  return dst;
+}
+
+function flipFrame(srcCanvas) {
+  const dst = document.createElement('canvas');
+  dst.width = FRAME_W;
+  dst.height = FRAME_H;
+  const ctx = dst.getContext('2d');
+  ctx.translate(FRAME_W, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(srcCanvas, 0, 0);
+  return dst;
+}
+
+function generateAllFrames() {
+  // Direction 2 = right (base)
+  const rightFrames = generateRightFrames();
+
+  // Angles for directions 0-4: up, up-right, right, down-right, down
+  const angles = [-Math.PI / 2, -Math.PI / 4, 0, Math.PI / 4, Math.PI / 2];
+
+  allFrames = {};
+
+  // Directions 0-4: rotate from right-facing base
+  for (let dir = 0; dir <= 4; dir++) {
+    for (let f = 0; f < ANIM_FRAMES; f++) {
+      const rotated = rotateFrame(rightFrames[f], angles[dir]);
+      const name = 'fish_nemo_' + dir + '-' + String(f).padStart(2, '0');
+      allFrames[name] = rotated;
+    }
+  }
+
+  // Directions 5,6,7: flip of 3,2,1
+  const flipSources = [3, 2, 1];
+  for (let i = 0; i < 3; i++) {
+    const dir = 5 + i;
+    const srcDir = flipSources[i];
+    for (let f = 0; f < ANIM_FRAMES; f++) {
+      const srcName = 'fish_nemo_' + srcDir + '-' + String(f).padStart(2, '0');
+      const flipped = flipFrame(allFrames[srcName]);
+      const name = 'fish_nemo_' + dir + '-' + String(f).padStart(2, '0');
+      allFrames[name] = flipped;
+    }
+  }
+}
+
+function packAtlas() {
+  // Collect all frame names in order: dir 0 frame 0..11, dir 1 frame 0..11, ...
+  const frameList = [];
+  for (let dir = 0; dir < DIRECTIONS; dir++) {
+    for (let f = 0; f < ANIM_FRAMES; f++) {
+      frameList.push('fish_nemo_' + dir + '-' + String(f).padStart(2, '0'));
+    }
+  }
+
+  // Row-based packing into ATLAS_W wide atlas with PADDING
+  const placements = []; // {name, x, y, w, h}
+  let curX = PADDING;
+  let curY = PADDING;
+  let rowHeight = 0;
+
+  for (const name of frameList) {
+    const canvas = allFrames[name];
+    const w = canvas.width;
+    const h = canvas.height;
+
+    if (curX + w + PADDING > ATLAS_W) {
+      // Next row
+      curX = PADDING;
+      curY += rowHeight + PADDING;
+      rowHeight = 0;
+    }
+
+    placements.push({ name, x: curX, y: curY, w, h });
+    curX += w + PADDING;
+    if (h > rowHeight) rowHeight = h;
+  }
+
+  const atlasHeight = curY + rowHeight + PADDING;
+
+  // Draw atlas
+  const canvas = document.getElementById('atlas-canvas');
+  canvas.width = ATLAS_W;
+  canvas.height = atlasHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, ATLAS_W, atlasHeight);
+
+  for (const p of placements) {
+    ctx.drawImage(allFrames[p.name], p.x, p.y);
+  }
+
+  atlasCanvas = canvas;
+
+  // Generate SPRITE_DATA
+  const offsetX = -Math.floor((LOGICAL_W - FRAME_W) / 2);  // -18
+  const offsetY = -Math.floor((LOGICAL_H - FRAME_H) / 2);  // -24
+
+  const frames = placements.map(p => {
+    return [p.name, p.x, p.y, p.w, p.h, offsetX, offsetY, LOGICAL_W, LOGICAL_H];
+  });
+
+  const data = { frames: frames };
+  spriteDataJSON = JSON.stringify(data);
+
+  // Show SPRITE_DATA using textContent
+  const output = document.getElementById('sprite-data-output');
+  output.textContent = 'const SPRITE_DATA = ' + spriteDataJSON + ';';
+}
+
+function showDirectionPreviews() {
+  const previewArea = document.getElementById('preview-area');
+  // Clear using removeChild loop
+  while (previewArea.firstChild) {
+    previewArea.removeChild(previewArea.firstChild);
+  }
+
+  const scale = 3;
+  const previewW = FRAME_W * scale;
+  const previewH = FRAME_H * scale;
+
+  for (let dir = 0; dir < DIRECTIONS; dir++) {
+    const container = document.createElement('div');
+    container.className = 'dir-preview';
+
+    const canvas = document.createElement('canvas');
+    canvas.width = previewW;
+    canvas.height = previewH;
+    canvas.style.imageRendering = 'pixelated';
+    canvas.style.width = previewW + 'px';
+    canvas.style.height = previewH + 'px';
+    container.appendChild(canvas);
+
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = 'Dir ' + dir + ' (' + DIR_NAMES[dir] + ')';
+    container.appendChild(label);
+
+    previewArea.appendChild(container);
+
+    // Animate
+    let frame = 0;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+
+    setInterval(function() {
+      const name = 'fish_nemo_' + dir + '-' + String(frame).padStart(2, '0');
+      ctx.clearRect(0, 0, previewW, previewH);
+      ctx.drawImage(allFrames[name], 0, 0, FRAME_W, FRAME_H, 0, 0, previewW, previewH);
+      frame = (frame + 1) % ANIM_FRAMES;
+    }, 80);
+  }
+}
+
+// === Orchestration ===
+function generate() {
+  const btn = document.getElementById('btn-generate');
+  btn.disabled = true;
+  setStatus('Generating right-facing frames...');
+
+  // Use setTimeout to allow UI to update
+  setTimeout(function() {
+    generateAllFrames();
+    setStatus('Packing atlas...');
+
+    setTimeout(function() {
+      packAtlas();
+      setStatus('Creating previews...');
+
+      setTimeout(function() {
+        showDirectionPreviews();
+        setStatus('Done! Generated ' + (DIRECTIONS * ANIM_FRAMES) + ' frames.');
+        document.getElementById('btn-download').disabled = false;
+        document.getElementById('btn-copy').disabled = false;
+        btn.disabled = false;
+      }, 10);
+    }, 10);
+  }, 10);
+}
+
+function downloadPNG() {
+  if (!atlasCanvas) return;
+  const link = document.createElement('a');
+  link.download = 'fish_nemo.png';
+  link.href = atlasCanvas.toDataURL('image/png');
+  link.click();
+}
+
+function copySpriteData() {
+  if (!spriteDataJSON) return;
+  const text = 'const SPRITE_DATA = ' + spriteDataJSON + ';';
+  navigator.clipboard.writeText(text).then(function() {
+    setStatus('SPRITE_DATA copied to clipboard!');
+  }, function() {
+    setStatus('Failed to copy to clipboard.');
+  });
+}
+
+function setStatus(msg) {
+  document.getElementById('status').textContent = msg;
+}
+</script>
+</body>
+</html>
