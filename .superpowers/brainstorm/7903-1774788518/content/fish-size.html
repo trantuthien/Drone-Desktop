@@ -1,0 +1,26 @@
+<h2>Kích thước pixel art</h2>
+<p class="subtitle">Sprite gốc (drone) có kích thước ~60×48px mỗi frame trong khung logic 96×96px. Bạn muốn cá Nemo kích thước nào?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Giữ nguyên kích thước gốc (~60×48px)</h3>
+      <p>Tương đương con drone hiện tại. Drop-in replacement, không cần sửa code. <strong>Khuyến nghị.</strong></p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Nhỏ hơn (~32×24px)</h3>
+      <p>Cute mini. Sẽ cần điều chỉnh offset/scale trong code.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Lớn hơn (~96×72px)</h3>
+      <p>Chi tiết hơn, dễ thấy trên desktop. Cần điều chỉnh collision radius và offset.</p>
+    </div>
+  </div>
+</div>

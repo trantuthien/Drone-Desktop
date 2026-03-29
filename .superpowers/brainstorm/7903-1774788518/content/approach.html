@@ -1,0 +1,38 @@
+<h2>Cách tạo sprite sheet cá Nemo</h2>
+<p class="subtitle">96 frame (8 hướng × 12 frame animation) — bạn muốn tạo bằng cách nào?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Code tạo bằng Canvas (programmatic pixel art)</h3>
+      <p>Viết code JavaScript/Canvas vẽ cá Nemo pixel-by-pixel, tự động sinh 96 frame với rotation + animation vây/đuôi. <strong>Hoàn toàn tự động, miễn phí, có thể tùy chỉnh.</strong></p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>100% tự động, không cần tool bên ngoài</li><li>Dễ chỉnh màu, kích thước, animation</li><li>Tạo đúng format sprite data cần thiết</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Chất lượng pixel art phụ thuộc vào code</li><li>Có thể trông "thô" hơn vẽ tay</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Tải sprite miễn phí + chỉnh sửa</h3>
+      <p>Tìm sprite cá Nemo có sẵn trên itch.io/OpenGameArt, rồi viết script convert sang đúng format 8 hướng × 12 frame.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Chất lượng art tốt (do artist vẽ)</li><li>Nhiều lựa chọn style</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Khó tìm đúng 8 hướng + animation</li><li>Phải xử lý license</li><li>Cần chỉnh sửa thủ công</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>SVG → Pixel Art (hybrid)</h3>
+      <p>Code vẽ cá Nemo bằng SVG vector, rồi render ra pixel art PNG ở kích thước nhỏ. Kết hợp sự mượt mà của vector với look pixel art.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Dễ xoay 8 hướng (vector rotation)</li><li>Trông smooth hơn pure pixel art</li><li>Dễ animate vây/đuôi bằng transform</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Có thể mất "pixel art feel"</li><li>Phức tạp hơn option A</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

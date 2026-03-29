@@ -17,6 +17,7 @@ const settings = {
     hoverPeriod: 500,                    // Chu kỳ hover (ms)
     collisionEnabled: false,              // Bật/tắt va chạm
     dragEnabled: false,                  // Bật/tắt kéo thả chuột
+    theme: 'nemo',                       // Theme hiện tại
 };
 // ================================================================
 
@@ -100,6 +101,12 @@ function setDrag(enabled) {
     updateTrayMenu();
 }
 
+function setTheme(themeId) {
+    settings.theme = themeId;
+    mainWindow?.webContents.send('set-theme', themeId);
+    updateTrayMenu();
+}
+
 function updateTrayMenu() {
     const amounts = [1, 5, 10, 50, 100];
 
@@ -176,6 +183,14 @@ function updateTrayMenu() {
                     checked: settings.dragEnabled,
                     click: () => setDrag(!settings.dragEnabled)
                 },
+            ]
+        },
+        {
+            label: 'Theme',
+            submenu: [
+                { label: 'Nemo Fish', type: 'checkbox', checked: settings.theme === 'nemo', click: () => setTheme('nemo') },
+                { label: 'Blue Fish', type: 'checkbox', checked: settings.theme === 'blue', click: () => setTheme('blue') },
+                { label: 'Drone', type: 'checkbox', checked: settings.theme === 'drone', click: () => setTheme('drone') },
             ]
         },
         { type: 'separator' },

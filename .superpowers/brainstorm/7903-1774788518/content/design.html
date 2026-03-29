@@ -1,0 +1,71 @@
+<h2>Thiết kế: Sprite Sheet Cá Nemo</h2>
+<p class="subtitle">Tổng quan thiết kế — xem và cho ý kiến</p>
+
+<div class="section">
+  <h3>1. Output</h3>
+  <p>Một file <code>generate-fish-sprite.html</code> — mở trong browser, tự động vẽ và cho tải về:</p>
+  <ul>
+    <li><strong>fish_sprite.png</strong> — texture atlas (tương tự drone5_0-a87912ea5.png)</li>
+    <li><strong>SPRITE_DATA</strong> — JavaScript object chứa frame metadata, copy-paste vào index.html</li>
+  </ul>
+</div>
+
+<div class="section">
+  <h3>2. Cá Nemo Pixel Art</h3>
+  <table style="width:100%; border-collapse:collapse; margin:12px 0;">
+    <tr style="border-bottom:1px solid #333;">
+      <td style="padding:8px; color:#888;">Hình dạng</td>
+      <td style="padding:8px;">Thân oval, 3 sọc trắng viền đen trên nền cam</td>
+    </tr>
+    <tr style="border-bottom:1px solid #333;">
+      <td style="padding:8px; color:#888;">Màu sắc</td>
+      <td style="padding:8px;">Cam (#FF6B35), Trắng (#FFFFFF), Đen (#1A1A1A), Mắt đen+trắng</td>
+    </tr>
+    <tr style="border-bottom:1px solid #333;">
+      <td style="padding:8px; color:#888;">Kích thước frame</td>
+      <td style="padding:8px;">~60×48px thực tế, trong khung logic 96×96px</td>
+    </tr>
+    <tr style="border-bottom:1px solid #333;">
+      <td style="padding:8px; color:#888;">Chi tiết</td>
+      <td style="padding:8px;">Vây lưng, vây đuôi, vây bụng, mắt tròn</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>3. Animation (12 frame/hướng)</h3>
+  <table style="width:100%; border-collapse:collapse; margin:12px 0;">
+    <tr style="border-bottom:1px solid #333;">
+      <td style="padding:8px; color:#888;">Đuôi</td>
+      <td style="padding:8px;">Vẫy qua lại (sin wave) — tạo cảm giác bơi tự nhiên</td>
+    </tr>
+    <tr style="border-bottom:1px solid #333;">
+      <td style="padding:8px; color:#888;">Vây</td>
+      <td style="padding:8px;">Rung nhẹ theo chu kỳ đuôi</td>
+    </tr>
+    <tr style="border-bottom:1px solid #333;">
+      <td style="padding:8px; color:#888;">Thân</td>
+      <td style="padding:8px;">Uốn nhẹ theo hướng đuôi (body wave)</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>4. 8 Hướng</h3>
+  <div style="text-align:center; font-size:14px; font-family:monospace; line-height:2; padding:16px; background:#1a1a1a; border-radius:8px;">
+    <div>↑ Hướng 0: Bơi lên (nhìn từ trên)</div>
+    <div>↗ Hướng 1: Bơi chéo phải-lên</div>
+    <div>→ Hướng 2: Bơi phải (nhìn ngang)</div>
+    <div>↘ Hướng 3: Bơi chéo phải-xuống</div>
+    <div>↓ Hướng 4: Bơi xuống (nhìn từ trên)</div>
+    <div>↙ Hướng 5: Bơi chéo trái-xuống</div>
+    <div>← Hướng 6: Bơi trái (flip ngang của hướng 2)</div>
+    <div>↖ Hướng 7: Bơi chéo trái-lên (flip của hướng 3)</div>
+  </div>
+  <p style="margin-top:8px; color:#888;">Hướng 5-7 = flip ngang của hướng 1-3 → chỉ cần vẽ 5 hướng gốc</p>
+</div>
+
+<div class="section">
+  <h3>5. Tích hợp</h3>
+  <p>Drop-in replacement: đổi tên file PNG + thay SPRITE_DATA trong index.html → chạy ngay, không cần sửa logic.</p>
+</div>

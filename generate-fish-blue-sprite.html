@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nemo Fish Sprite Generator</title>
+<title>Blue Fish Sprite Generator</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -12,7 +12,7 @@
     font-family: 'Courier New', monospace;
     padding: 20px;
   }
-  h1 { color: #FF6B35; margin-bottom: 10px; }
+  h1 { color: #3588FF; margin-bottom: 10px; }
   .subtitle { color: #888; margin-bottom: 20px; font-size: 14px; }
   .buttons { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
   button {
@@ -65,8 +65,8 @@
 </style>
 </head>
 <body>
-<h1>Nemo Fish Sprite Generator</h1>
-<p class="subtitle">Generates a clownfish pixel art sprite sheet (8 directions x 12 frames)</p>
+<h1>Blue Fish Sprite Generator</h1>
+<p class="subtitle">Generates a blue elongated fish sprite sheet (8 directions x 12 frames)</p>
 
 <div class="buttons">
   <button id="btn-generate" onclick="generate()">Generate</button>
@@ -99,192 +99,184 @@ const ATLAS_W = 254;
 const PADDING = 1;
 
 // Storage
-let allFrames = {}; // key: "fish_nemo_D-FF" -> canvas
+let allFrames = {}; // key: "fish_blue_D-FF" -> canvas
 let spriteDataJSON = '';
 let atlasCanvas = null;
 const DIR_NAMES = ['Up', 'Up-Right', 'Right', 'Down-Right', 'Down', 'Down-Left', 'Left', 'Up-Left'];
 
-// === Draw one frame of clownfish facing right using Canvas 2D API ===
-// Uses bezier curves, ellipses, gradients for smooth anti-aliased rendering
-function drawClownfishRight(ctx, tailAngle, finOffset) {
-  const cx = 28;  // body center X
+// === Draw one frame of blue elongated fish facing right ===
+function drawBlueFishRight(ctx, tailAngle, finOffset) {
+  const cx = 26;  // body center X (shifted left — longer body needs room for tail)
   const cy = 24;  // body center Y
-  const bodyRx = 15; // body horizontal radius
-  const bodyRy = 10;  // body vertical radius
+  const bodyRx = 18; // elongated horizontal radius
+  const bodyRy = 7;  // slimmer vertical radius
 
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  // --- Tail fin (behind body) ---
+  // --- Tail fin (behind body, elegant forked) ---
   const tailBaseX = cx - bodyRx + 2;
-  const tailSwing = Math.sin(tailAngle) * 6;
-  const tailTipX = tailBaseX - 12;
+  const tailSwing = Math.sin(tailAngle) * 5;
+  const tailTipX = tailBaseX - 10;
   const tailTipY = cy + tailSwing;
 
-  // Tail with bezier curves for smooth forked shape
   var tailGrad = ctx.createLinearGradient(tailBaseX, cy, tailTipX, tailTipY);
-  tailGrad.addColorStop(0, '#FF7F45');
-  tailGrad.addColorStop(1, '#FF5522');
+  tailGrad.addColorStop(0, '#4090DD');
+  tailGrad.addColorStop(1, '#2060AA');
   ctx.fillStyle = tailGrad;
   ctx.beginPath();
-  ctx.moveTo(tailBaseX, cy - 2);
-  ctx.quadraticCurveTo(tailBaseX - 6, cy - 1 + tailSwing * 0.5, tailTipX, tailTipY - 7);
-  ctx.quadraticCurveTo(tailBaseX - 5, tailTipY, tailTipX + 1, tailTipY);
-  ctx.quadraticCurveTo(tailBaseX - 5, tailTipY, tailTipX, tailTipY + 7);
-  ctx.quadraticCurveTo(tailBaseX - 6, cy + 1 + tailSwing * 0.5, tailBaseX, cy + 2);
+  ctx.moveTo(tailBaseX, cy - 1.5);
+  ctx.quadraticCurveTo(tailBaseX - 5, cy - 1 + tailSwing * 0.4, tailTipX, tailTipY - 6);
+  ctx.quadraticCurveTo(tailBaseX - 4, tailTipY, tailTipX + 1, tailTipY);
+  ctx.quadraticCurveTo(tailBaseX - 4, tailTipY, tailTipX, tailTipY + 6);
+  ctx.quadraticCurveTo(tailBaseX - 5, cy + 1 + tailSwing * 0.4, tailBaseX, cy + 1.5);
   ctx.closePath();
   ctx.fill();
-  ctx.strokeStyle = '#CC4411';
-  ctx.lineWidth = 0.6;
+  ctx.strokeStyle = '#1A4580';
+  ctx.lineWidth = 0.5;
   ctx.stroke();
 
-  // Tail fin rays (subtle lines)
-  ctx.strokeStyle = 'rgba(200, 80, 30, 0.4)';
-  ctx.lineWidth = 0.4;
+  // Tail fin rays
+  ctx.strokeStyle = 'rgba(30, 70, 130, 0.3)';
+  ctx.lineWidth = 0.3;
   for (let i = -2; i <= 2; i++) {
     ctx.beginPath();
-    ctx.moveTo(tailBaseX - 1, cy + i * 1.2);
-    ctx.lineTo(tailTipX + 3, tailTipY + i * 2.5);
+    ctx.moveTo(tailBaseX - 1, cy + i * 0.8);
+    ctx.lineTo(tailTipX + 2, tailTipY + i * 2.2);
     ctx.stroke();
   }
 
-  // --- Body: smooth ellipse with gradient ---
-  var bodyGrad = ctx.createRadialGradient(cx + 3, cy - 2, 2, cx, cy, bodyRx);
-  bodyGrad.addColorStop(0, '#FFA060');
-  bodyGrad.addColorStop(0.5, '#FF6B35');
-  bodyGrad.addColorStop(1, '#E05520');
+  // --- Body: elongated ellipse with blue gradient ---
+  var bodyGrad = ctx.createRadialGradient(cx + 4, cy - 2, 2, cx, cy, bodyRx);
+  bodyGrad.addColorStop(0, '#70B8FF');
+  bodyGrad.addColorStop(0.4, '#3588DD');
+  bodyGrad.addColorStop(1, '#1A5599');
   ctx.fillStyle = bodyGrad;
   ctx.beginPath();
   ctx.ellipse(cx, cy, bodyRx, bodyRy, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Body outline
-  ctx.strokeStyle = '#AA3810';
-  ctx.lineWidth = 0.8;
+  ctx.strokeStyle = '#13407A';
+  ctx.lineWidth = 0.7;
   ctx.stroke();
 
-  // --- Dorsal fin (top, behind stripes) ---
-  const dorsalWave = finOffset * 0.6;
-  ctx.fillStyle = '#FF9055';
+  // --- Lateral line (horizontal stripe along body) ---
+  ctx.strokeStyle = 'rgba(100, 180, 255, 0.5)';
+  ctx.lineWidth = 0.6;
   ctx.beginPath();
-  ctx.moveTo(cx - 5, cy - bodyRy + 1);
-  ctx.quadraticCurveTo(cx - 1, cy - bodyRy - 7 + dorsalWave, cx + 6, cy - bodyRy + 1);
-  ctx.quadraticCurveTo(cx, cy - bodyRy + 2, cx - 5, cy - bodyRy + 1);
+  ctx.moveTo(cx - bodyRx + 4, cy);
+  ctx.bezierCurveTo(cx - 6, cy - 0.5, cx + 6, cy - 0.5, cx + bodyRx - 3, cy);
+  ctx.stroke();
+
+  // --- Dorsal fin (long, elegant) ---
+  const dorsalWave = finOffset * 0.5;
+  ctx.fillStyle = '#4898EE';
+  ctx.beginPath();
+  ctx.moveTo(cx - 8, cy - bodyRy + 0.5);
+  ctx.quadraticCurveTo(cx - 4, cy - bodyRy - 6 + dorsalWave, cx + 2, cy - bodyRy - 5 + dorsalWave);
+  ctx.quadraticCurveTo(cx + 6, cy - bodyRy - 3 + dorsalWave, cx + 8, cy - bodyRy + 0.5);
   ctx.closePath();
   ctx.fill();
-  ctx.strokeStyle = '#CC5522';
-  ctx.lineWidth = 0.5;
+  ctx.strokeStyle = '#2265AA';
+  ctx.lineWidth = 0.4;
   ctx.stroke();
 
   // Dorsal fin rays
-  ctx.strokeStyle = 'rgba(180, 60, 20, 0.3)';
+  ctx.strokeStyle = 'rgba(25, 70, 140, 0.25)';
   ctx.lineWidth = 0.3;
-  for (let i = 0; i < 4; i++) {
-    const fx = cx - 3 + i * 2.5;
+  for (let i = 0; i < 6; i++) {
+    const fx = cx - 6 + i * 2.5;
     ctx.beginPath();
-    ctx.moveTo(fx, cy - bodyRy + 1);
-    ctx.lineTo(fx + 0.5, cy - bodyRy - 4 + dorsalWave * (0.5 + i * 0.15));
+    ctx.moveTo(fx, cy - bodyRy + 0.5);
+    ctx.lineTo(fx + 0.3, cy - bodyRy - 4 + dorsalWave * (0.4 + i * 0.1));
     ctx.stroke();
   }
 
-  // --- White stripes with smooth edges ---
-  function drawStripe(sx, stripeRy, width) {
-    // Black border left
-    ctx.fillStyle = 'rgba(20, 20, 20, 0.7)';
-    ctx.beginPath();
-    ctx.ellipse(sx - width / 2 - 0.5, cy, 0.8, stripeRy, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // White stripe
-    ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath();
-    ctx.ellipse(sx, cy, width / 2, stripeRy, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // Subtle shadow on white
-    ctx.fillStyle = 'rgba(200, 200, 200, 0.3)';
-    ctx.beginPath();
-    ctx.ellipse(sx + 0.3, cy + 1, width / 2 - 0.3, stripeRy - 0.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // Black border right
-    ctx.fillStyle = 'rgba(20, 20, 20, 0.7)';
-    ctx.beginPath();
-    ctx.ellipse(sx + width / 2 + 0.5, cy, 0.8, stripeRy, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  drawStripe(cx + 9, 7, 3);     // Head stripe
-  drawStripe(cx, 9, 3);         // Middle stripe
-  drawStripe(cx - 9, 6.5, 2.5); // Tail stripe
-
-  // --- Ventral fin (bottom) ---
-  const ventralWave = -finOffset * 0.4;
-  ctx.fillStyle = '#FF9055';
+  // --- Anal fin (bottom, smaller) ---
+  const analWave = -finOffset * 0.3;
+  ctx.fillStyle = '#4898EE';
   ctx.beginPath();
-  ctx.moveTo(cx - 2, cy + bodyRy - 1);
-  ctx.quadraticCurveTo(cx + 1, cy + bodyRy + 5 + ventralWave, cx + 5, cy + bodyRy - 1);
+  ctx.moveTo(cx - 4, cy + bodyRy - 0.5);
+  ctx.quadraticCurveTo(cx - 1, cy + bodyRy + 4 + analWave, cx + 4, cy + bodyRy - 0.5);
   ctx.closePath();
   ctx.fill();
-  ctx.strokeStyle = '#CC5522';
-  ctx.lineWidth = 0.5;
+  ctx.strokeStyle = '#2265AA';
+  ctx.lineWidth = 0.4;
   ctx.stroke();
 
   // --- Pectoral fin (side, animated) ---
-  const pFinAngle = finOffset * 0.4;
-  const pfx = cx + 5;
+  const pFinAngle = finOffset * 0.35;
+  const pfx = cx + 6;
   const pfy = cy + 1;
   ctx.save();
   ctx.translate(pfx, pfy);
-  ctx.rotate(pFinAngle * 0.15);
-  ctx.fillStyle = 'rgba(255, 144, 85, 0.8)';
+  ctx.rotate(pFinAngle * 0.12);
+  ctx.fillStyle = 'rgba(80, 160, 240, 0.7)';
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.quadraticCurveTo(5, -1 + pFinAngle, 7, 3 + pFinAngle);
-  ctx.quadraticCurveTo(3, 4 + pFinAngle * 0.5, 0, 2);
+  ctx.quadraticCurveTo(5, -1 + pFinAngle, 8, 2 + pFinAngle);
+  ctx.quadraticCurveTo(4, 3 + pFinAngle * 0.4, 0, 1.5);
   ctx.closePath();
   ctx.fill();
-  ctx.strokeStyle = '#CC5522';
-  ctx.lineWidth = 0.4;
+  ctx.strokeStyle = '#2265AA';
+  ctx.lineWidth = 0.3;
   ctx.stroke();
   ctx.restore();
 
-  // --- Eye ---
-  const eyeX = cx + 11;
-  const eyeY = cy - 2;
+  // --- Belly highlight (light underside) ---
+  ctx.fillStyle = 'rgba(180, 220, 255, 0.3)';
+  ctx.beginPath();
+  ctx.ellipse(cx + 2, cy + 2, bodyRx - 6, bodyRy - 3, 0, 0, Math.PI * 2);
+  ctx.fill();
 
-  // Eye white
+  // --- Scales shimmer (subtle pattern) ---
+  ctx.fillStyle = 'rgba(120, 200, 255, 0.15)';
+  for (let sx = -10; sx <= 10; sx += 4) {
+    for (let sy = -3; sy <= 3; sy += 3) {
+      const px = cx + sx + (sy % 2) * 2;
+      const py = cy + sy;
+      const dist = (sx * sx) / (bodyRx * bodyRx) + (sy * sy) / (bodyRy * bodyRy);
+      if (dist < 0.75) {
+        ctx.beginPath();
+        ctx.arc(px, py, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  // --- Eye ---
+  const eyeX = cx + 14;
+  const eyeY = cy - 1;
+
   ctx.fillStyle = '#FFFFFF';
   ctx.beginPath();
-  ctx.ellipse(eyeX, eyeY, 2.5, 2.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(eyeX, eyeY, 2, 2, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = '#111';
-  ctx.lineWidth = 0.5;
+  ctx.strokeStyle = '#0A2040';
+  ctx.lineWidth = 0.4;
   ctx.stroke();
 
   // Pupil
-  ctx.fillStyle = '#111111';
+  ctx.fillStyle = '#0A0A0A';
   ctx.beginPath();
-  ctx.ellipse(eyeX + 0.8, eyeY + 0.3, 1.4, 1.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(eyeX + 0.6, eyeY + 0.2, 1.1, 1.2, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Eye highlight
   ctx.fillStyle = '#FFFFFF';
   ctx.beginPath();
-  ctx.ellipse(eyeX + 0.2, eyeY - 0.8, 0.7, 0.6, -0.3, 0, Math.PI * 2);
+  ctx.ellipse(eyeX + 0.1, eyeY - 0.6, 0.5, 0.4, -0.3, 0, Math.PI * 2);
   ctx.fill();
 
   // --- Mouth ---
-  ctx.strokeStyle = '#882200';
-  ctx.lineWidth = 0.6;
+  ctx.strokeStyle = '#0E3060';
+  ctx.lineWidth = 0.5;
   ctx.beginPath();
-  ctx.moveTo(cx + bodyRx - 1, cy + 1);
-  ctx.quadraticCurveTo(cx + bodyRx + 0.5, cy + 2, cx + bodyRx - 1.5, cy + 2.5);
+  ctx.moveTo(cx + bodyRx - 1, cy + 0.5);
+  ctx.quadraticCurveTo(cx + bodyRx + 0.3, cy + 1.5, cx + bodyRx - 1, cy + 2);
   ctx.stroke();
-
-  // --- Belly highlight (subtle shading) ---
-  ctx.fillStyle = 'rgba(255, 200, 150, 0.25)';
-  ctx.beginPath();
-  ctx.ellipse(cx + 2, cy + 3, bodyRx - 5, bodyRy - 4, 0.1, 0, Math.PI * 2);
-  ctx.fill();
 
   ctx.restore();
 }
@@ -301,7 +293,7 @@ function generateRightFrames() {
     canvas.width = FRAME_W;
     canvas.height = FRAME_H;
     const ctx = canvas.getContext('2d');
-    drawClownfishRight(ctx, tailAngle, finOffset);
+    drawBlueFishRight(ctx, tailAngle, finOffset);
     frames.push(canvas);
   }
   return frames;
@@ -345,7 +337,7 @@ function generateAllFrames() {
   for (let dir = 0; dir <= 4; dir++) {
     for (let f = 0; f < ANIM_FRAMES; f++) {
       const rotated = rotateFrame(rightFrames[f], angles[dir]);
-      const name = 'fish_nemo_' + dir + '-' + String(f).padStart(2, '0');
+      const name = 'fish_blue_' + dir + '-' + String(f).padStart(2, '0');
       allFrames[name] = rotated;
     }
   }
@@ -356,9 +348,9 @@ function generateAllFrames() {
     const dir = 5 + i;
     const srcDir = flipSources[i];
     for (let f = 0; f < ANIM_FRAMES; f++) {
-      const srcName = 'fish_nemo_' + srcDir + '-' + String(f).padStart(2, '0');
+      const srcName = 'fish_blue_' + srcDir + '-' + String(f).padStart(2, '0');
       const flipped = flipFrame(allFrames[srcName]);
-      const name = 'fish_nemo_' + dir + '-' + String(f).padStart(2, '0');
+      const name = 'fish_blue_' + dir + '-' + String(f).padStart(2, '0');
       allFrames[name] = flipped;
     }
   }
@@ -369,7 +361,7 @@ function packAtlas() {
   const frameList = [];
   for (let dir = 0; dir < DIRECTIONS; dir++) {
     for (let f = 0; f < ANIM_FRAMES; f++) {
-      frameList.push('fish_nemo_' + dir + '-' + String(f).padStart(2, '0'));
+      frameList.push('fish_blue_' + dir + '-' + String(f).padStart(2, '0'));
     }
   }
 
@@ -468,7 +460,7 @@ function showDirectionPreviews() {
     ctx.imageSmoothingEnabled = false;
 
     previewIntervals.push(setInterval(function() {
-      const name = 'fish_nemo_' + dir + '-' + String(frame).padStart(2, '0');
+      const name = 'fish_blue_' + dir + '-' + String(frame).padStart(2, '0');
       ctx.clearRect(0, 0, previewW, previewH);
       ctx.drawImage(allFrames[name], 0, 0, FRAME_W, FRAME_H, 0, 0, previewW, previewH);
       frame = (frame + 1) % ANIM_FRAMES;
@@ -505,7 +497,7 @@ function generate() {
 function downloadPNG() {
   if (!atlasCanvas) return;
   const link = document.createElement('a');
-  link.download = 'fish_nemo.png';
+  link.download = 'fish_blue.png';
   link.href = atlasCanvas.toDataURL('image/png');
   link.click();
 }
