@@ -117,22 +117,24 @@ function drawClownfishRight(ctx, tailAngle, finOffset) {
   ctx.lineJoin = 'round';
 
   // --- Tail fin (behind body) ---
+  // Side-view: animate tail SPREAD (foreshortening) to show horizontal wagging
+  // When tail swings toward/away from viewer, it appears narrower/wider
   const tailBaseX = cx - bodyRx + 2;
-  const tailSwing = Math.sin(tailAngle) * 6;
   const tailTipX = tailBaseX - 12;
-  const tailTipY = cy + tailSwing;
+  const tailTipY = cy;
+  // Spread cycles between narrow (3) and wide (7) — foreshortening effect
+  const tailSpread = 5 + Math.sin(tailAngle) * 2;
 
-  // Tail with bezier curves for smooth forked shape
   var tailGrad = ctx.createLinearGradient(tailBaseX, cy, tailTipX, tailTipY);
   tailGrad.addColorStop(0, '#FF7F45');
   tailGrad.addColorStop(1, '#FF5522');
   ctx.fillStyle = tailGrad;
   ctx.beginPath();
   ctx.moveTo(tailBaseX, cy - 2);
-  ctx.quadraticCurveTo(tailBaseX - 6, cy - 1 + tailSwing * 0.5, tailTipX, tailTipY - 7);
-  ctx.quadraticCurveTo(tailBaseX - 5, tailTipY, tailTipX + 1, tailTipY);
-  ctx.quadraticCurveTo(tailBaseX - 5, tailTipY, tailTipX, tailTipY + 7);
-  ctx.quadraticCurveTo(tailBaseX - 6, cy + 1 + tailSwing * 0.5, tailBaseX, cy + 2);
+  ctx.quadraticCurveTo(tailBaseX - 6, cy - 1, tailTipX, tailTipY - tailSpread);
+  ctx.quadraticCurveTo(tailTipX + 3, tailTipY, tailTipX + 1, tailTipY);
+  ctx.quadraticCurveTo(tailTipX + 3, tailTipY, tailTipX, tailTipY + tailSpread);
+  ctx.quadraticCurveTo(tailBaseX - 6, cy + 1, tailBaseX, cy + 2);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = '#CC4411';
@@ -145,7 +147,7 @@ function drawClownfishRight(ctx, tailAngle, finOffset) {
   for (let i = -2; i <= 2; i++) {
     ctx.beginPath();
     ctx.moveTo(tailBaseX - 1, cy + i * 1.2);
-    ctx.lineTo(tailTipX + 3, tailTipY + i * 2.5);
+    ctx.lineTo(tailTipX + 3, tailTipY + i * (tailSpread / 3));
     ctx.stroke();
   }
 
@@ -164,12 +166,11 @@ function drawClownfishRight(ctx, tailAngle, finOffset) {
   ctx.lineWidth = 0.8;
   ctx.stroke();
 
-  // --- Dorsal fin (top, behind stripes) ---
-  const dorsalWave = finOffset * 0.6;
+  // --- Dorsal fin (top, static) ---
   ctx.fillStyle = '#FF9055';
   ctx.beginPath();
   ctx.moveTo(cx - 5, cy - bodyRy + 1);
-  ctx.quadraticCurveTo(cx - 1, cy - bodyRy - 7 + dorsalWave, cx + 6, cy - bodyRy + 1);
+  ctx.quadraticCurveTo(cx - 1, cy - bodyRy - 7, cx + 6, cy - bodyRy + 1);
   ctx.quadraticCurveTo(cx, cy - bodyRy + 2, cx - 5, cy - bodyRy + 1);
   ctx.closePath();
   ctx.fill();
@@ -184,7 +185,7 @@ function drawClownfishRight(ctx, tailAngle, finOffset) {
     const fx = cx - 3 + i * 2.5;
     ctx.beginPath();
     ctx.moveTo(fx, cy - bodyRy + 1);
-    ctx.lineTo(fx + 0.5, cy - bodyRy - 4 + dorsalWave * (0.5 + i * 0.15));
+    ctx.lineTo(fx + 0.5, cy - bodyRy - 4);
     ctx.stroke();
   }
 
@@ -216,30 +217,28 @@ function drawClownfishRight(ctx, tailAngle, finOffset) {
   drawStripe(cx, 9, 3);         // Middle stripe
   drawStripe(cx - 9, 6.5, 2.5); // Tail stripe
 
-  // --- Ventral fin (bottom) ---
-  const ventralWave = -finOffset * 0.4;
+  // --- Ventral fin (bottom, static) ---
   ctx.fillStyle = '#FF9055';
   ctx.beginPath();
   ctx.moveTo(cx - 2, cy + bodyRy - 1);
-  ctx.quadraticCurveTo(cx + 1, cy + bodyRy + 5 + ventralWave, cx + 5, cy + bodyRy - 1);
+  ctx.quadraticCurveTo(cx + 1, cy + bodyRy + 5, cx + 5, cy + bodyRy - 1);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = '#CC5522';
   ctx.lineWidth = 0.5;
   ctx.stroke();
 
-  // --- Pectoral fin (side, animated) ---
-  const pFinAngle = finOffset * 0.4;
+  // --- Pectoral fin (side, gentle rotation only) ---
   const pfx = cx + 5;
   const pfy = cy + 1;
   ctx.save();
   ctx.translate(pfx, pfy);
-  ctx.rotate(pFinAngle * 0.15);
+  ctx.rotate(Math.sin(tailAngle) * 0.1);
   ctx.fillStyle = 'rgba(255, 144, 85, 0.8)';
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.quadraticCurveTo(5, -1 + pFinAngle, 7, 3 + pFinAngle);
-  ctx.quadraticCurveTo(3, 4 + pFinAngle * 0.5, 0, 2);
+  ctx.quadraticCurveTo(5, -1, 7, 3);
+  ctx.quadraticCurveTo(3, 4, 0, 2);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = '#CC5522';
@@ -333,31 +332,21 @@ function generateAllFrames() {
   // Direction 2 = right (base)
   const rightFrames = generateRightFrames();
 
-  // Angles for directions 0-4: up, up-right, right, down-right, down
-  // Clamped to max ~25° to keep fish looking natural (not fully vertical)
-  const MAX_TILT = Math.PI / 7;  // ~25 degrees
-  const DIAG_TILT = Math.PI / 12; // ~15 degrees
-  const angles = [-MAX_TILT, -DIAG_TILT, 0, DIAG_TILT, MAX_TILT];
-
   allFrames = {};
 
-  // Directions 0-4: rotate from right-facing base
+  // No rotation — fish swims horizontally, all directions use same sprite
+  // Directions 0-4: use right-facing frames (no rotation = no Y jitter)
   for (let dir = 0; dir <= 4; dir++) {
     for (let f = 0; f < ANIM_FRAMES; f++) {
-      const rotated = rotateFrame(rightFrames[f], angles[dir]);
       const name = 'fish_nemo_' + dir + '-' + String(f).padStart(2, '0');
-      allFrames[name] = rotated;
+      allFrames[name] = rightFrames[f];
     }
   }
 
-  // Directions 5,6,7: flip of 3,2,1
-  const flipSources = [3, 2, 1];
-  for (let i = 0; i < 3; i++) {
-    const dir = 5 + i;
-    const srcDir = flipSources[i];
+  // Directions 5-7: flip for left-facing
+  for (let dir = 5; dir <= 7; dir++) {
     for (let f = 0; f < ANIM_FRAMES; f++) {
-      const srcName = 'fish_nemo_' + srcDir + '-' + String(f).padStart(2, '0');
-      const flipped = flipFrame(allFrames[srcName]);
+      const flipped = flipFrame(rightFrames[f]);
       const name = 'fish_nemo_' + dir + '-' + String(f).padStart(2, '0');
       allFrames[name] = flipped;
     }

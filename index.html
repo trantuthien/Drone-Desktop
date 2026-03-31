@@ -61,7 +61,9 @@
                 prefix: 'fish_nemo_',
                 sectorToDir: [2, 3, 4, 5, 6, 7, 0, 1],
                 bubbles: true,
-                verticalRatio: 0.15,  // vy = 15% of vx → mostly horizontal
+                verticalRatio: 0.15,
+                moveSpeed: { min: 10, max: 25 },
+                swimDrift: { amplitude: 20, period: 4000 },  // gentle Y drift via draw offset
                 spriteData: {"frames":[["fish_nemo_0-00",1,1,60,48,-18,-24,96,96],["fish_nemo_0-01",62,1,60,48,-18,-24,96,96],["fish_nemo_0-02",123,1,60,48,-18,-24,96,96],["fish_nemo_0-03",184,1,60,48,-18,-24,96,96],["fish_nemo_0-04",1,50,60,48,-18,-24,96,96],["fish_nemo_0-05",62,50,60,48,-18,-24,96,96],["fish_nemo_0-06",123,50,60,48,-18,-24,96,96],["fish_nemo_0-07",184,50,60,48,-18,-24,96,96],["fish_nemo_0-08",1,99,60,48,-18,-24,96,96],["fish_nemo_0-09",62,99,60,48,-18,-24,96,96],["fish_nemo_0-10",123,99,60,48,-18,-24,96,96],["fish_nemo_0-11",184,99,60,48,-18,-24,96,96],["fish_nemo_1-00",1,148,60,48,-18,-24,96,96],["fish_nemo_1-01",62,148,60,48,-18,-24,96,96],["fish_nemo_1-02",123,148,60,48,-18,-24,96,96],["fish_nemo_1-03",184,148,60,48,-18,-24,96,96],["fish_nemo_1-04",1,197,60,48,-18,-24,96,96],["fish_nemo_1-05",62,197,60,48,-18,-24,96,96],["fish_nemo_1-06",123,197,60,48,-18,-24,96,96],["fish_nemo_1-07",184,197,60,48,-18,-24,96,96],["fish_nemo_1-08",1,246,60,48,-18,-24,96,96],["fish_nemo_1-09",62,246,60,48,-18,-24,96,96],["fish_nemo_1-10",123,246,60,48,-18,-24,96,96],["fish_nemo_1-11",184,246,60,48,-18,-24,96,96],["fish_nemo_2-00",1,295,60,48,-18,-24,96,96],["fish_nemo_2-01",62,295,60,48,-18,-24,96,96],["fish_nemo_2-02",123,295,60,48,-18,-24,96,96],["fish_nemo_2-03",184,295,60,48,-18,-24,96,96],["fish_nemo_2-04",1,344,60,48,-18,-24,96,96],["fish_nemo_2-05",62,344,60,48,-18,-24,96,96],["fish_nemo_2-06",123,344,60,48,-18,-24,96,96],["fish_nemo_2-07",184,344,60,48,-18,-24,96,96],["fish_nemo_2-08",1,393,60,48,-18,-24,96,96],["fish_nemo_2-09",62,393,60,48,-18,-24,96,96],["fish_nemo_2-10",123,393,60,48,-18,-24,96,96],["fish_nemo_2-11",184,393,60,48,-18,-24,96,96],["fish_nemo_3-00",1,442,60,48,-18,-24,96,96],["fish_nemo_3-01",62,442,60,48,-18,-24,96,96],["fish_nemo_3-02",123,442,60,48,-18,-24,96,96],["fish_nemo_3-03",184,442,60,48,-18,-24,96,96],["fish_nemo_3-04",1,491,60,48,-18,-24,96,96],["fish_nemo_3-05",62,491,60,48,-18,-24,96,96],["fish_nemo_3-06",123,491,60,48,-18,-24,96,96],["fish_nemo_3-07",184,491,60,48,-18,-24,96,96],["fish_nemo_3-08",1,540,60,48,-18,-24,96,96],["fish_nemo_3-09",62,540,60,48,-18,-24,96,96],["fish_nemo_3-10",123,540,60,48,-18,-24,96,96],["fish_nemo_3-11",184,540,60,48,-18,-24,96,96],["fish_nemo_4-00",1,589,60,48,-18,-24,96,96],["fish_nemo_4-01",62,589,60,48,-18,-24,96,96],["fish_nemo_4-02",123,589,60,48,-18,-24,96,96],["fish_nemo_4-03",184,589,60,48,-18,-24,96,96],["fish_nemo_4-04",1,638,60,48,-18,-24,96,96],["fish_nemo_4-05",62,638,60,48,-18,-24,96,96],["fish_nemo_4-06",123,638,60,48,-18,-24,96,96],["fish_nemo_4-07",184,638,60,48,-18,-24,96,96],["fish_nemo_4-08",1,687,60,48,-18,-24,96,96],["fish_nemo_4-09",62,687,60,48,-18,-24,96,96],["fish_nemo_4-10",123,687,60,48,-18,-24,96,96],["fish_nemo_4-11",184,687,60,48,-18,-24,96,96],["fish_nemo_5-00",1,736,60,48,-18,-24,96,96],["fish_nemo_5-01",62,736,60,48,-18,-24,96,96],["fish_nemo_5-02",123,736,60,48,-18,-24,96,96],["fish_nemo_5-03",184,736,60,48,-18,-24,96,96],["fish_nemo_5-04",1,785,60,48,-18,-24,96,96],["fish_nemo_5-05",62,785,60,48,-18,-24,96,96],["fish_nemo_5-06",123,785,60,48,-18,-24,96,96],["fish_nemo_5-07",184,785,60,48,-18,-24,96,96],["fish_nemo_5-08",1,834,60,48,-18,-24,96,96],["fish_nemo_5-09",62,834,60,48,-18,-24,96,96],["fish_nemo_5-10",123,834,60,48,-18,-24,96,96],["fish_nemo_5-11",184,834,60,48,-18,-24,96,96],["fish_nemo_6-00",1,883,60,48,-18,-24,96,96],["fish_nemo_6-01",62,883,60,48,-18,-24,96,96],["fish_nemo_6-02",123,883,60,48,-18,-24,96,96],["fish_nemo_6-03",184,883,60,48,-18,-24,96,96],["fish_nemo_6-04",1,932,60,48,-18,-24,96,96],["fish_nemo_6-05",62,932,60,48,-18,-24,96,96],["fish_nemo_6-06",123,932,60,48,-18,-24,96,96],["fish_nemo_6-07",184,932,60,48,-18,-24,96,96],["fish_nemo_6-08",1,981,60,48,-18,-24,96,96],["fish_nemo_6-09",62,981,60,48,-18,-24,96,96],["fish_nemo_6-10",123,981,60,48,-18,-24,96,96],["fish_nemo_6-11",184,981,60,48,-18,-24,96,96],["fish_nemo_7-00",1,1030,60,48,-18,-24,96,96],["fish_nemo_7-01",62,1030,60,48,-18,-24,96,96],["fish_nemo_7-02",123,1030,60,48,-18,-24,96,96],["fish_nemo_7-03",184,1030,60,48,-18,-24,96,96],["fish_nemo_7-04",1,1079,60,48,-18,-24,96,96],["fish_nemo_7-05",62,1079,60,48,-18,-24,96,96],["fish_nemo_7-06",123,1079,60,48,-18,-24,96,96],["fish_nemo_7-07",184,1079,60,48,-18,-24,96,96],["fish_nemo_7-08",1,1128,60,48,-18,-24,96,96],["fish_nemo_7-09",62,1128,60,48,-18,-24,96,96],["fish_nemo_7-10",123,1128,60,48,-18,-24,96,96],["fish_nemo_7-11",184,1128,60,48,-18,-24,96,96]]}
             },
             blue: {
@@ -71,6 +73,8 @@
                 sectorToDir: [2, 3, 4, 5, 6, 7, 0, 1],
                 bubbles: true,
                 verticalRatio: 0.15,
+                moveSpeed: { min: 12, max: 30 },
+                swimDrift: { amplitude: 25, period: 3500 },
                 spriteData: {"frames":[["fish_blue_0-00",1,1,60,48,-18,-24,96,96],["fish_blue_0-01",62,1,60,48,-18,-24,96,96],["fish_blue_0-02",123,1,60,48,-18,-24,96,96],["fish_blue_0-03",184,1,60,48,-18,-24,96,96],["fish_blue_0-04",1,50,60,48,-18,-24,96,96],["fish_blue_0-05",62,50,60,48,-18,-24,96,96],["fish_blue_0-06",123,50,60,48,-18,-24,96,96],["fish_blue_0-07",184,50,60,48,-18,-24,96,96],["fish_blue_0-08",1,99,60,48,-18,-24,96,96],["fish_blue_0-09",62,99,60,48,-18,-24,96,96],["fish_blue_0-10",123,99,60,48,-18,-24,96,96],["fish_blue_0-11",184,99,60,48,-18,-24,96,96],["fish_blue_1-00",1,148,60,48,-18,-24,96,96],["fish_blue_1-01",62,148,60,48,-18,-24,96,96],["fish_blue_1-02",123,148,60,48,-18,-24,96,96],["fish_blue_1-03",184,148,60,48,-18,-24,96,96],["fish_blue_1-04",1,197,60,48,-18,-24,96,96],["fish_blue_1-05",62,197,60,48,-18,-24,96,96],["fish_blue_1-06",123,197,60,48,-18,-24,96,96],["fish_blue_1-07",184,197,60,48,-18,-24,96,96],["fish_blue_1-08",1,246,60,48,-18,-24,96,96],["fish_blue_1-09",62,246,60,48,-18,-24,96,96],["fish_blue_1-10",123,246,60,48,-18,-24,96,96],["fish_blue_1-11",184,246,60,48,-18,-24,96,96],["fish_blue_2-00",1,295,60,48,-18,-24,96,96],["fish_blue_2-01",62,295,60,48,-18,-24,96,96],["fish_blue_2-02",123,295,60,48,-18,-24,96,96],["fish_blue_2-03",184,295,60,48,-18,-24,96,96],["fish_blue_2-04",1,344,60,48,-18,-24,96,96],["fish_blue_2-05",62,344,60,48,-18,-24,96,96],["fish_blue_2-06",123,344,60,48,-18,-24,96,96],["fish_blue_2-07",184,344,60,48,-18,-24,96,96],["fish_blue_2-08",1,393,60,48,-18,-24,96,96],["fish_blue_2-09",62,393,60,48,-18,-24,96,96],["fish_blue_2-10",123,393,60,48,-18,-24,96,96],["fish_blue_2-11",184,393,60,48,-18,-24,96,96],["fish_blue_3-00",1,442,60,48,-18,-24,96,96],["fish_blue_3-01",62,442,60,48,-18,-24,96,96],["fish_blue_3-02",123,442,60,48,-18,-24,96,96],["fish_blue_3-03",184,442,60,48,-18,-24,96,96],["fish_blue_3-04",1,491,60,48,-18,-24,96,96],["fish_blue_3-05",62,491,60,48,-18,-24,96,96],["fish_blue_3-06",123,491,60,48,-18,-24,96,96],["fish_blue_3-07",184,491,60,48,-18,-24,96,96],["fish_blue_3-08",1,540,60,48,-18,-24,96,96],["fish_blue_3-09",62,540,60,48,-18,-24,96,96],["fish_blue_3-10",123,540,60,48,-18,-24,96,96],["fish_blue_3-11",184,540,60,48,-18,-24,96,96],["fish_blue_4-00",1,589,60,48,-18,-24,96,96],["fish_blue_4-01",62,589,60,48,-18,-24,96,96],["fish_blue_4-02",123,589,60,48,-18,-24,96,96],["fish_blue_4-03",184,589,60,48,-18,-24,96,96],["fish_blue_4-04",1,638,60,48,-18,-24,96,96],["fish_blue_4-05",62,638,60,48,-18,-24,96,96],["fish_blue_4-06",123,638,60,48,-18,-24,96,96],["fish_blue_4-07",184,638,60,48,-18,-24,96,96],["fish_blue_4-08",1,687,60,48,-18,-24,96,96],["fish_blue_4-09",62,687,60,48,-18,-24,96,96],["fish_blue_4-10",123,687,60,48,-18,-24,96,96],["fish_blue_4-11",184,687,60,48,-18,-24,96,96],["fish_blue_5-00",1,736,60,48,-18,-24,96,96],["fish_blue_5-01",62,736,60,48,-18,-24,96,96],["fish_blue_5-02",123,736,60,48,-18,-24,96,96],["fish_blue_5-03",184,736,60,48,-18,-24,96,96],["fish_blue_5-04",1,785,60,48,-18,-24,96,96],["fish_blue_5-05",62,785,60,48,-18,-24,96,96],["fish_blue_5-06",123,785,60,48,-18,-24,96,96],["fish_blue_5-07",184,785,60,48,-18,-24,96,96],["fish_blue_5-08",1,834,60,48,-18,-24,96,96],["fish_blue_5-09",62,834,60,48,-18,-24,96,96],["fish_blue_5-10",123,834,60,48,-18,-24,96,96],["fish_blue_5-11",184,834,60,48,-18,-24,96,96],["fish_blue_6-00",1,883,60,48,-18,-24,96,96],["fish_blue_6-01",62,883,60,48,-18,-24,96,96],["fish_blue_6-02",123,883,60,48,-18,-24,96,96],["fish_blue_6-03",184,883,60,48,-18,-24,96,96],["fish_blue_6-04",1,932,60,48,-18,-24,96,96],["fish_blue_6-05",62,932,60,48,-18,-24,96,96],["fish_blue_6-06",123,932,60,48,-18,-24,96,96],["fish_blue_6-07",184,932,60,48,-18,-24,96,96],["fish_blue_6-08",1,981,60,48,-18,-24,96,96],["fish_blue_6-09",62,981,60,48,-18,-24,96,96],["fish_blue_6-10",123,981,60,48,-18,-24,96,96],["fish_blue_6-11",184,981,60,48,-18,-24,96,96],["fish_blue_7-00",1,1030,60,48,-18,-24,96,96],["fish_blue_7-01",62,1030,60,48,-18,-24,96,96],["fish_blue_7-02",123,1030,60,48,-18,-24,96,96],["fish_blue_7-03",184,1030,60,48,-18,-24,96,96],["fish_blue_7-04",1,1079,60,48,-18,-24,96,96],["fish_blue_7-05",62,1079,60,48,-18,-24,96,96],["fish_blue_7-06",123,1079,60,48,-18,-24,96,96],["fish_blue_7-07",184,1079,60,48,-18,-24,96,96],["fish_blue_7-08",1,1128,60,48,-18,-24,96,96],["fish_blue_7-09",62,1128,60,48,-18,-24,96,96],["fish_blue_7-10",123,1128,60,48,-18,-24,96,96],["fish_blue_7-11",184,1128,60,48,-18,-24,96,96]]}
             }
         };
@@ -128,7 +132,7 @@
                 bubbles.push({
                     x: x + (Math.random() - 0.5) * 4,
                     y: y + (Math.random() - 0.5) * 3,
-                    r: 1 + Math.random() * 1.5,          // small: 1-2.5px
+                    r: 2.5 + Math.random() * 2.5,        // 2.5-5px starting radius
                     vx: (Math.random() - 0.5) * 3,       // very slight drift
                     vy: -(8 + Math.random() * 12),        // gentle rise
                     wobblePhase: Math.random() * Math.PI * 2,
@@ -151,7 +155,7 @@
                     y: b.y,
                     vx: Math.cos(angle) * speed,
                     vy: Math.sin(angle) * speed,
-                    r: 0.4 + Math.random() * 0.5,
+                    r: 1 + Math.random() * 1.5,
                     life: 0,
                     maxLife: 0.15 + Math.random() * 0.1, // very short: 0.15-0.25s
                 });
@@ -188,7 +192,7 @@
                 b.x += b.vx * dt + wobble;
                 b.y += b.vy * dt;
                 b.vy *= 0.99;                // decelerate as they rise
-                b.r += dt * 0.4;             // grow slowly
+                b.r += dt * 1.2;             // grow as they rise
             }
         }
 
@@ -254,12 +258,13 @@
             reset() {
                 this.x = Math.random() * (window.innerWidth - 100);
                 this.y = Math.random() * (window.innerHeight - 100);
-                const speed = config.moveSpeed.min + Math.random() * (config.moveSpeed.max - config.moveSpeed.min);
+                const ms = currentTheme.moveSpeed || config.moveSpeed;
+                const speed = ms.min + Math.random() * (ms.max - ms.min);
                 const vr = currentTheme.verticalRatio;
                 if (vr != null) {
-                    // Mostly horizontal: full speed left or right, small vertical drift
+                    // Fish: horizontal only, hover handles vertical drift
                     this.vx = (Math.random() < 0.5 ? -1 : 1) * speed;
-                    this.vy = (Math.random() - 0.5) * 2 * speed * vr;
+                    this.vy = 0;
                 } else {
                     const angle = Math.random() * Math.PI * 2;
                     this.vx = Math.cos(angle) * speed;
@@ -273,7 +278,8 @@
                 this.alpha = 1.0;
                 this.dead = false;
                 this.collisionCooldown = 0;
-                this.bubbleTimer = 2 + Math.random() * 4; // first bubble in 2-6s
+                this.bubbleTimer = 2 + Math.random() * 4;
+                this.lifeTime = 0;
             }
 
             get centerX() { return this.x + (FRAME_W * this.scale) / 2; }
@@ -305,17 +311,22 @@
                 if (this.dead || this === draggedDrone) return;
 
                 this.collisionCooldown = Math.max(0, this.collisionCooldown - dt);
+                this.lifeTime += dt;
 
+                const vr = currentTheme.verticalRatio;
                 this.x += this.vx * dt;
                 this.y += this.vy * dt;
 
-                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                const maxAllowedSpeed = Math.max(100, config.moveSpeed.max * 1.5);
-                if (speed > maxAllowedSpeed) {
-                    this.vx *= 0.98;
-                    this.vy *= 0.98;
+                if (vr == null) {
+                    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                    const maxAllowedSpeed = Math.max(100, config.moveSpeed.max * 1.5);
+                    if (speed > maxAllowedSpeed) {
+                        this.vx *= 0.98;
+                        this.vy *= 0.98;
+                    }
                 }
 
+                // Bounce off walls
                 if (this.x < 0 || this.x > canvas.width - FRAME_W * this.scale) {
                     this.vx *= -1;
                     this.x = Math.max(0, Math.min(this.x, canvas.width - FRAME_W * this.scale));
@@ -323,13 +334,6 @@
                 if (this.y < 0 || this.y > canvas.height - FRAME_H * this.scale) {
                     this.vy *= -1;
                     this.y = Math.max(0, Math.min(this.y, canvas.height - FRAME_H * this.scale));
-                }
-
-                // Clamp vertical speed for themes with verticalRatio
-                const vr = currentTheme.verticalRatio;
-                if (vr != null) {
-                    const maxVy = Math.abs(this.vx) * vr;
-                    this.vy = Math.max(-maxVy, Math.min(this.vy, maxVy));
                 }
 
                 this.frameTime += dt;
@@ -342,9 +346,8 @@
                 if (currentTheme.bubbles) {
                     this.bubbleTimer -= dt;
                     if (this.bubbleTimer <= 0) {
-                        const mouthX = this.centerX + this.vx * 0.3;
-                        const mouthY = this.centerY + this.vy * 0.3;
-                        spawnBubble(mouthX, mouthY);
+                        const mouthX = this.centerX + (this.vx > 0 ? 20 : -20);
+                        spawnBubble(mouthX, this.centerY - 5);
                         this.bubbleTimer = 3 + Math.random() * 5;
                     }
                 }
@@ -353,21 +356,33 @@
             draw(ctx, time) {
                 if (this.dead || !spriteSheet) return;
 
-                const hoverY = config.hoverAmplitude > 0
+                let hoverY = config.hoverAmplitude > 0
                     ? Math.sin(time / config.hoverPeriod + this.hoverOffset) * config.hoverAmplitude
                     : 0;
+                // Fish swim drift: smooth sine Y offset (replaces vy movement)
+                const sd = currentTheme.swimDrift;
+                if (sd) {
+                    hoverY += Math.sin(time / sd.period + this.hoverOffset) * sd.amplitude;
+                }
 
-                const angle = Math.atan2(this.vy, this.vx);
-                const normalizedAngle = (angle + Math.PI * 2) % (Math.PI * 2);
-                const sector = Math.floor((normalizedAngle + Math.PI / 8) / (Math.PI / 4)) % 8;
-                const dir = SECTOR_TO_DIR[sector];
+                let dir;
+                if (currentTheme.verticalRatio != null) {
+                    // Fish: only 2 real directions — right (dir 2) or left (dir 6)
+                    dir = this.vx >= 0 ? 2 : 6;
+                } else {
+                    // Drone: full 8-direction system
+                    const angle = Math.atan2(this.vy, this.vx);
+                    const normalizedAngle = (angle + Math.PI * 2) % (Math.PI * 2);
+                    const sector = Math.floor((normalizedAngle + Math.PI / 8) / (Math.PI / 4)) % 8;
+                    dir = SECTOR_TO_DIR[sector];
+                }
 
                 const fd = spriteFrames[FRAME_NAMES[dir][this.frame]];
                 if (!fd) return;
 
                 ctx.globalAlpha = this.alpha;
-                const drawX = (this.x - fd.offsetX * this.scale) | 0;
-                const drawY = (this.y + hoverY - fd.offsetY * this.scale) | 0;
+                const drawX = this.x - fd.offsetX * this.scale;
+                const drawY = this.y + hoverY - fd.offsetY * this.scale;
                 ctx.drawImage(
                     spriteSheet,
                     fd.x, fd.y, fd.w, fd.h,

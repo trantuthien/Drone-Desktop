@@ -1,11 +1,10 @@
 #!/bin/bash
 cd "$(dirname "$0")"
 
-# Kiểm tra nếu app đã chạy
-if pgrep -f "electron.*drone-desktop" > /dev/null; then
-    echo "Drone Desktop is already running!"
-    exit 0
-fi
+# Kill process cũ nếu đang chạy
+pkill -f "Electron.*Drone-Desktop" 2>/dev/null
+pkill -f "electron.*Drone-Desktop" 2>/dev/null
+pkill -f "Drone-Desktop.*electron" 2>/dev/null && echo "Killed old process." && sleep 1
 
 # Cài đặt lần đầu nếu chưa có
 if [ ! -d "node_modules" ]; then

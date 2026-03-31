@@ -116,10 +116,11 @@ function drawBlueFishRight(ctx, tailAngle, finOffset) {
   ctx.lineJoin = 'round';
 
   // --- Tail fin (behind body, elegant forked) ---
+  // Side-view: animate tail SPREAD (foreshortening) to show horizontal wagging
   const tailBaseX = cx - bodyRx + 2;
-  const tailSwing = Math.sin(tailAngle) * 5;
   const tailTipX = tailBaseX - 10;
-  const tailTipY = cy + tailSwing;
+  const tailTipY = cy;
+  const tailSpread = 4.5 + Math.sin(tailAngle) * 1.5;
 
   var tailGrad = ctx.createLinearGradient(tailBaseX, cy, tailTipX, tailTipY);
   tailGrad.addColorStop(0, '#4090DD');
@@ -127,10 +128,10 @@ function drawBlueFishRight(ctx, tailAngle, finOffset) {
   ctx.fillStyle = tailGrad;
   ctx.beginPath();
   ctx.moveTo(tailBaseX, cy - 1.5);
-  ctx.quadraticCurveTo(tailBaseX - 5, cy - 1 + tailSwing * 0.4, tailTipX, tailTipY - 6);
-  ctx.quadraticCurveTo(tailBaseX - 4, tailTipY, tailTipX + 1, tailTipY);
-  ctx.quadraticCurveTo(tailBaseX - 4, tailTipY, tailTipX, tailTipY + 6);
-  ctx.quadraticCurveTo(tailBaseX - 5, cy + 1 + tailSwing * 0.4, tailBaseX, cy + 1.5);
+  ctx.quadraticCurveTo(tailBaseX - 5, cy - 1, tailTipX, tailTipY - tailSpread);
+  ctx.quadraticCurveTo(tailTipX + 2, tailTipY, tailTipX + 1, tailTipY);
+  ctx.quadraticCurveTo(tailTipX + 2, tailTipY, tailTipX, tailTipY + tailSpread);
+  ctx.quadraticCurveTo(tailBaseX - 5, cy + 1, tailBaseX, cy + 1.5);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = '#1A4580';
@@ -143,7 +144,7 @@ function drawBlueFishRight(ctx, tailAngle, finOffset) {
   for (let i = -2; i <= 2; i++) {
     ctx.beginPath();
     ctx.moveTo(tailBaseX - 1, cy + i * 0.8);
-    ctx.lineTo(tailTipX + 2, tailTipY + i * 2.2);
+    ctx.lineTo(tailTipX + 2, tailTipY + i * (tailSpread / 3));
     ctx.stroke();
   }
 
@@ -170,13 +171,12 @@ function drawBlueFishRight(ctx, tailAngle, finOffset) {
   ctx.bezierCurveTo(cx - 6, cy - 0.5, cx + 6, cy - 0.5, cx + bodyRx - 3, cy);
   ctx.stroke();
 
-  // --- Dorsal fin (long, elegant) ---
-  const dorsalWave = finOffset * 0.5;
+  // --- Dorsal fin (long, elegant, static) ---
   ctx.fillStyle = '#4898EE';
   ctx.beginPath();
   ctx.moveTo(cx - 8, cy - bodyRy + 0.5);
-  ctx.quadraticCurveTo(cx - 4, cy - bodyRy - 6 + dorsalWave, cx + 2, cy - bodyRy - 5 + dorsalWave);
-  ctx.quadraticCurveTo(cx + 6, cy - bodyRy - 3 + dorsalWave, cx + 8, cy - bodyRy + 0.5);
+  ctx.quadraticCurveTo(cx - 4, cy - bodyRy - 6, cx + 2, cy - bodyRy - 5);
+  ctx.quadraticCurveTo(cx + 6, cy - bodyRy - 3, cx + 8, cy - bodyRy + 0.5);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = '#2265AA';
@@ -190,34 +190,32 @@ function drawBlueFishRight(ctx, tailAngle, finOffset) {
     const fx = cx - 6 + i * 2.5;
     ctx.beginPath();
     ctx.moveTo(fx, cy - bodyRy + 0.5);
-    ctx.lineTo(fx + 0.3, cy - bodyRy - 4 + dorsalWave * (0.4 + i * 0.1));
+    ctx.lineTo(fx + 0.3, cy - bodyRy - 4);
     ctx.stroke();
   }
 
-  // --- Anal fin (bottom, smaller) ---
-  const analWave = -finOffset * 0.3;
+  // --- Anal fin (bottom, static) ---
   ctx.fillStyle = '#4898EE';
   ctx.beginPath();
   ctx.moveTo(cx - 4, cy + bodyRy - 0.5);
-  ctx.quadraticCurveTo(cx - 1, cy + bodyRy + 4 + analWave, cx + 4, cy + bodyRy - 0.5);
+  ctx.quadraticCurveTo(cx - 1, cy + bodyRy + 4, cx + 4, cy + bodyRy - 0.5);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = '#2265AA';
   ctx.lineWidth = 0.4;
   ctx.stroke();
 
-  // --- Pectoral fin (side, animated) ---
-  const pFinAngle = finOffset * 0.35;
+  // --- Pectoral fin (side, gentle rotation only) ---
   const pfx = cx + 6;
   const pfy = cy + 1;
   ctx.save();
   ctx.translate(pfx, pfy);
-  ctx.rotate(pFinAngle * 0.12);
+  ctx.rotate(Math.sin(tailAngle) * 0.1);
   ctx.fillStyle = 'rgba(80, 160, 240, 0.7)';
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.quadraticCurveTo(5, -1 + pFinAngle, 8, 2 + pFinAngle);
-  ctx.quadraticCurveTo(4, 3 + pFinAngle * 0.4, 0, 1.5);
+  ctx.quadraticCurveTo(5, -1, 8, 2);
+  ctx.quadraticCurveTo(4, 3, 0, 1.5);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = '#2265AA';
@@ -325,31 +323,20 @@ function generateAllFrames() {
   // Direction 2 = right (base)
   const rightFrames = generateRightFrames();
 
-  // Angles for directions 0-4: up, up-right, right, down-right, down
-  // Clamped to max ~25° to keep fish looking natural (not fully vertical)
-  const MAX_TILT = Math.PI / 7;  // ~25 degrees
-  const DIAG_TILT = Math.PI / 12; // ~15 degrees
-  const angles = [-MAX_TILT, -DIAG_TILT, 0, DIAG_TILT, MAX_TILT];
-
   allFrames = {};
 
-  // Directions 0-4: rotate from right-facing base
+  // No rotation — fish swims horizontally, all directions use same sprite
   for (let dir = 0; dir <= 4; dir++) {
     for (let f = 0; f < ANIM_FRAMES; f++) {
-      const rotated = rotateFrame(rightFrames[f], angles[dir]);
       const name = 'fish_blue_' + dir + '-' + String(f).padStart(2, '0');
-      allFrames[name] = rotated;
+      allFrames[name] = rightFrames[f];
     }
   }
 
-  // Directions 5,6,7: flip of 3,2,1
-  const flipSources = [3, 2, 1];
-  for (let i = 0; i < 3; i++) {
-    const dir = 5 + i;
-    const srcDir = flipSources[i];
+  // Directions 5-7: flip for left-facing
+  for (let dir = 5; dir <= 7; dir++) {
     for (let f = 0; f < ANIM_FRAMES; f++) {
-      const srcName = 'fish_blue_' + srcDir + '-' + String(f).padStart(2, '0');
-      const flipped = flipFrame(allFrames[srcName]);
+      const flipped = flipFrame(rightFrames[f]);
       const name = 'fish_blue_' + dir + '-' + String(f).padStart(2, '0');
       allFrames[name] = flipped;
     }
