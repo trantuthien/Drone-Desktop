@@ -197,45 +197,39 @@
         }
 
         function drawBubbles(ctx) {
-            // Draw bubbles
+            // Draw bubbles — simple circles, no per-frame gradient creation
             for (const b of bubbles) {
                 if (b.delay > 0) continue;
                 const t = b.life / b.maxLife;
-                const alpha = t < 0.15 ? t / 0.15 : 1; // fade in only, no fade out (pops instead)
+                const alpha = t < 0.15 ? t / 0.15 : 1;
 
-                ctx.globalAlpha = alpha * 0.55;
-
-                // Bubble body
-                const grad = ctx.createRadialGradient(
-                    b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.05,
-                    b.x, b.y, b.r
-                );
-                grad.addColorStop(0, 'rgba(220, 240, 255, 0.7)');
-                grad.addColorStop(0.6, 'rgba(150, 210, 255, 0.25)');
-                grad.addColorStop(1, 'rgba(120, 190, 255, 0.05)');
-                ctx.fillStyle = grad;
+                // Bubble body — simple filled circle with transparency
+                ctx.globalAlpha = alpha * 0.35;
+                ctx.fillStyle = '#B0D8FF';
                 ctx.beginPath();
                 ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Thin outline
-                ctx.strokeStyle = 'rgba(160, 210, 255, ' + (alpha * 0.35) + ')';
-                ctx.lineWidth = 0.3;
+                // Outline
+                ctx.globalAlpha = alpha * 0.25;
+                ctx.strokeStyle = '#90C0EE';
+                ctx.lineWidth = 0.4;
                 ctx.stroke();
 
-                // Small highlight
-                ctx.globalAlpha = alpha * 0.8;
+                // Highlight dot
+                ctx.globalAlpha = alpha * 0.7;
                 ctx.fillStyle = '#FFFFFF';
                 ctx.beginPath();
                 ctx.arc(b.x - b.r * 0.25, b.y - b.r * 0.3, b.r * 0.2, 0, Math.PI * 2);
                 ctx.fill();
+
             }
 
-            // Draw pop particles
+            // Pop particles
+            ctx.fillStyle = '#C0DEFF';
             for (const p of popParticles) {
                 const t = 1 - p.life / p.maxLife;
-                ctx.globalAlpha = t * 0.7;
-                ctx.fillStyle = 'rgba(200, 230, 255, 0.8)';
+                ctx.globalAlpha = t * 0.6;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.r * t, 0, Math.PI * 2);
                 ctx.fill();
@@ -383,11 +377,12 @@
                 ctx.globalAlpha = this.alpha;
                 const drawX = this.x - fd.offsetX * this.scale;
                 const drawY = this.y + hoverY - fd.offsetY * this.scale;
+                const drawW = fd.w * this.scale;
+                const drawH = fd.h * this.scale;
                 ctx.drawImage(
                     spriteSheet,
                     fd.x, fd.y, fd.w, fd.h,
-                    drawX, drawY,
-                    fd.w * this.scale, fd.h * this.scale
+                    drawX, drawY, drawW, drawH
                 );
                 ctx.globalAlpha = 1;
             }
@@ -591,11 +586,17 @@
         let isVisible = true;
         let frameCount = 0;
         let animTime = 0;
-        const FIXED_DT = 1 / 60;
-        const FRAME_MS = 1000 / 60;
+        const TARGET_FPS = 30;
+        const FIXED_DT = 1 / TARGET_FPS;
+        const FRAME_MS = 1000 / TARGET_FPS;
+        let lastFrameTime = 0;
 
-        function loop() {
+        function loop(timestamp) {
+            requestAnimationFrame(loop);
             if (!isVisible) return;
+
+            if (timestamp - lastFrameTime < FRAME_MS) return;
+            lastFrameTime = timestamp;
 
             frameCount++;
             animTime += FRAME_MS;
@@ -609,7 +610,7 @@
 
             updateBubbles(FIXED_DT);
             checkAllCollisions();
-            if (frameCount % 60 === 0) cleanupDrones();
+            if (frameCount % TARGET_FPS === 0) cleanupDrones();
 
             for (let i = 0; i < len; i++) {
                 drones[i].draw(ctx, animTime);
@@ -635,7 +636,7 @@
                     drones.push(new Drone());
                 }
                 syncCount();
-                setInterval(loop, FRAME_MS);
+                requestAnimationFrame(loop);
             };
         }
 
